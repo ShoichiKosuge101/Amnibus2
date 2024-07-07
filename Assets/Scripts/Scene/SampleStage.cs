@@ -17,9 +17,11 @@ namespace Scene
         protected override void InitializeScene()
         {
             // シーンの初期化処理を記述
-            
-            // DgGeneratorを生成
             var dgGenerator = new DgGenerator();
+            
+            // MapDisplayを取得
+            var mapDisplay = GetComponent<MapDisplay>();
+            mapDisplay.DisplayMap(dgGenerator);
         }
     }
 }

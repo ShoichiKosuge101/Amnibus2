@@ -28,5 +28,14 @@ namespace Dungeons
             Outer = new DgRect();
             Room = new DgRect();
         }
+        
+        /// <summary>
+        /// デバッグ出力
+        /// </summary>
+        public void Dump()
+        {
+            Outer.Dump();
+            Room.Dump();
+        }
     }
 }

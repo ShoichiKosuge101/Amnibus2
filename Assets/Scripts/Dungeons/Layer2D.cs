@@ -137,5 +137,21 @@ namespace Dungeons
         {
             FillRect(position.x, position.y, size.x, size.y, value);
         }
+        
+        /// <summary>
+        /// デバッグ出力
+        /// </summary>
+        public void Dump()
+        {
+            for (var y = 0; y < _height; y++)
+            {
+                var line = "";
+                for (var x = 0; x < _width; x++)
+                {
+                    line += Get(x, y) == Chip.WALL ? "■" : "□";
+                }
+                Debug.Log(line);
+            }
+        }
     }
 }

@@ -10,12 +10,14 @@ namespace Dungeons
    /// </summary>
     public class DgGenerator
     {
-        private Layer2D _layer2D = null;
+        private readonly Layer2D _layer2D = null;
         
         private readonly Stack<DgDivision> _divisions = new Stack<DgDivision>();
         
         private const int WIDTH = 20;
+        public int Width => WIDTH;
         private const int HEIGHT = 20;
+        public int Height => HEIGHT;
         
         // 区画の最小サイズ
         private const int MIN_ROOM_SIZE = 5;
@@ -25,7 +27,8 @@ namespace Dungeons
         private const int OUTER_MARGIN = 2;
         // 乱数範囲調整
         private const int RANDOM_RANGE_OFFSET = 1;
-
+        private const int POS_MARGIN = 1;
+        
         /// <summary>
         /// コンストラクタ
         /// </summary>
@@ -42,8 +45,172 @@ namespace Dungeons
             CreateDivision(0, 0, WIDTH - 1, HEIGHT - 1);
             
             // 区画を分割
-            bool isVertical = Random.Range(0,2) == 0;
-            SplitDivision(isVertical);
+            SplitAllDivision();
+            
+            // 区画に部屋を作る
+            foreach (var division in _divisions)
+            {
+                CreateRoom(division);
+            }
+            
+            // 部屋をつなぐ通路を作る
+            ConnectPath();
+            
+            // マップ情報を出力
+            _layer2D.Dump();
+        }
+        
+        /// <summary>
+        /// 全区画を分割
+        /// </summary>
+        private void SplitAllDivision()
+        {
+            while (_divisions.Count > 0)
+            {
+                bool isVertical = Random.Range(0, 2) == 0;
+                
+                // 区画を分割
+                if(!TrySplitDivision(isVertical))
+                {
+                    // 分割できない場合は終了
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 通路を接続
+        /// </summary>
+        private void ConnectPath()
+        {
+            // リスト化
+            var divisions = _divisions.ToList();
+            
+            for (int i = 0; i < _divisions.Count - 1; ++i)
+            {
+                // リストの前後区画は必ず接続する
+                var div1 = divisions[i];
+                var div2 = divisions[i + 1];
+                
+                // 通路を作る
+                CreatePath(div1, div2);
+            }
+        }
+
+        /// <summary>
+        /// 通路を作成
+        /// </summary>
+        /// <param name="div1"></param>
+        /// <param name="div2"></param>
+        private void CreatePath(DgDivision div1, DgDivision div2)
+        {
+            // 通路の開始位置を決める
+            int x1 = Random.Range(div1.Room.Left, div1.Room.Right);
+            int y1 = Random.Range(div1.Room.Top, div1.Room.Bottom);
+            
+            int x2 = Random.Range(div2.Room.Left, div2.Room.Right);
+            int y2 = Random.Range(div2.Room.Top, div2.Room.Bottom);
+            
+            // L字型をランダムで生成
+            if(Random.Range(0, 2) == 0)
+            {
+                // 横->縦
+                CreateHorizontalPath(x1, x2, y1);
+                CreateVerticalPath(x2, y1, y2);
+            }
+            else
+            {
+                // 縦->横
+                CreateVerticalPath(x1, y1, y2);
+                CreateHorizontalPath(x1, y1, y2);
+            }
+        }
+
+        /// <summary>
+        /// 縦の通路を作成
+        /// </summary>
+        /// <param name="x1"></param>
+        /// <param name="y1"></param>
+        /// <param name="y2"></param>
+        private void CreateVerticalPath(int x1, int y1, int y2)
+        {
+            int top = Mathf.Min(y1, y2);
+            int bottom = Mathf.Max(y1, y2);
+            
+            for (int y = top; y <= bottom; ++y)
+            {
+                _layer2D.Set(x1, y, Chip.FLOOR);
+            }
+        }
+
+        /// <summary>
+        /// 横の通路を作成
+        /// </summary>
+        /// <param name="x1"></param>
+        /// <param name="x2"></param>
+        /// <param name="y1"></param>
+        private void CreateHorizontalPath(int x1, int x2, int y1)
+        {
+            int left = Mathf.Min(x1, x2);
+            int right = Mathf.Max(x1, x2);
+            
+            for (int x = left; x <= right; ++x)
+            {
+                _layer2D.Set(x, y1, Chip.FLOOR);
+            }
+        }
+
+        /// <summary>
+        /// 部屋を作成
+        /// </summary>
+        /// <param name="div"></param>
+        private void CreateRoom(DgDivision div)
+        {
+            // 基準サイズを決める
+            int dw = div.Outer.Width - OUTER_MARGIN;
+            int dh = div.Outer.Height - OUTER_MARGIN;
+            
+            // 大きさをランダムに決める
+            int sw = Random.Range(MIN_ROOM_SIZE, dw);
+            int sh = Random.Range(MIN_ROOM_SIZE, dh);
+            
+            // 最大サイズを超えないようにする
+            sw = Mathf.Min(sw, MAX_SIZE);
+            sh = Mathf.Min(sh, MAX_SIZE);
+            
+            // 空きサイズを計算
+            int rw = dw - sw;
+            int rh = dh - sh;
+            
+            // 部屋の左上位置を決める
+            int rx = Random.Range(0, rw) + POS_MARGIN;
+            int ry = Random.Range(0, rh) + POS_MARGIN;
+            
+            int left = div.Outer.Left + rx;
+            int top = div.Outer.Top + ry;
+            int right = left + sw;
+            int bottom = top + sh;
+            
+            // 部屋の大きさを決める
+            div.Room.Set(left, top, right, bottom);
+            
+            // 部屋を作る
+            FillRoom(div.Room);
+        }
+
+        /// <summary>
+        /// 部屋を作成
+        /// </summary>
+        /// <param name="divRoom"></param>
+        private void FillRoom(in DgRect divRoom)
+        {
+            for (int x = divRoom.Left; x < divRoom.Right; ++x)
+            {
+                for (int y = divRoom.Top; y < divRoom.Bottom; ++y)
+                {
+                    _layer2D.Set(x, y, Chip.FLOOR);
+                }
+            }
         }
 
         /// <summary>
@@ -64,14 +231,14 @@ namespace Dungeons
         /// 区画を分割
         /// </summary>
         /// <param name="isVertical"></param>
-        private void SplitDivision(bool isVertical)
+        private bool TrySplitDivision(bool isVertical)
         {
             // 最後の区画を取得(分割対象)
             if (!_divisions.TryPop(out DgDivision lastDivision))
             {
                 Debug.LogError("Division not found.");
                 
-                return;
+                return false;
             }
             
             var childDivision = new DgDivision();
@@ -83,7 +250,7 @@ namespace Dungeons
                 if (!CheckDivisionSize(lastDivision.Outer.Width))
                 {
                     _divisions.Push(lastDivision);
-                    return;
+                    return false;
                 }
                 
                 // 分割区画の右側を使用
@@ -119,7 +286,7 @@ namespace Dungeons
                 if (!CheckDivisionSize(lastDivision.Outer.Height))
                 {
                     _divisions.Push(lastDivision);
-                    return;
+                    return false;
                 }
                 
                 // 分割区画の下側を使用
@@ -164,6 +331,8 @@ namespace Dungeons
                 _divisions.Push(lastDivision);
                 _divisions.Push(childDivision);
             }
+            
+            return true;
         }
 
         /// <summary>
@@ -176,6 +345,11 @@ namespace Dungeons
             // 2分割した区画のサイズが最小サイズを下回る場合は分割しない
             // すなわち、２倍してかつ接続点の道を作るための最低限のサイズ(最小区画サイズ + 外周マージン + 分割線の幅)を確保できるか判定
             return size >= 2 * (MIN_ROOM_SIZE + OUTER_MARGIN) + 1;
+        }
+        
+        public Chip GetChip(int x, int y)
+        {
+            return _layer2D.Get(x, y);
         }
     }
 }

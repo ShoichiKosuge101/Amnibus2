@@ -47,5 +47,20 @@ namespace Dungeons
         {
             Set(position.x, position.y, position.x + size.x, position.y + size.y);
         }
+        
+        // コピー
+        public void Copy(in DgRect copy)
+        {
+            Left = copy.Left;
+            Top = copy.Top;
+            Right = copy.Right;
+            Bottom = copy.Bottom;
+        }
+        
+        // デバッグ出力
+        public void Dump()
+        {
+            Debug.Log($"Left: {Left}, Top: {Top}, Right: {Right}, Bottom: {Bottom}");
+        }
     }
 }
