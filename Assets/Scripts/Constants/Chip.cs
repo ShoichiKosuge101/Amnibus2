@@ -5,7 +5,8 @@
     /// </summary>
     public enum Chip
     {
-        WALL = -1,
+        WALL  = -1,
         FLOOR = 0,
+        GOAL  = 1,
     }
 }

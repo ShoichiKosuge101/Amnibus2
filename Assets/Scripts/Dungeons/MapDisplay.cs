@@ -12,6 +12,7 @@ namespace Dungeons
     {
         // Prefab
         public GameObject playerPrefab;
+        public GameObject goalPrefab;
 
         // ObjectPool
         public ObjectPool floorPool;
@@ -51,15 +52,25 @@ namespace Dungeons
                 {
                     Vector2 position = new Vector2(x, y);
 
-                    if (dgGenerator.GetChip(x, y) == Chip.FLOOR)
+                    switch (dgGenerator.GetChip(x, y))
                     {
-                        GameObject floorPrefab = floorPool.GetObject();
-                        floorPrefab.transform.position = position;
-                    }
-                    else if (dgGenerator.GetChip(x, y) == Chip.WALL)
-                    {
-                        GameObject wallPrefab = wallPool.GetObject();
-                        wallPrefab.transform.position = position;
+                        case Chip.FLOOR:
+                        {
+                            GameObject floorPrefab = floorPool.GetObject();
+                            floorPrefab.transform.position = position;
+                            break;
+                        }
+                        case Chip.WALL:
+                        {
+                            GameObject wallPrefab = wallPool.GetObject();
+                            wallPrefab.transform.position = position;
+                            break;
+                        }
+                        case Chip.GOAL:
+                        {
+                            Instantiate(goalPrefab, position, Quaternion.identity);
+                            break;
+                        }
                     }
                 }
             }

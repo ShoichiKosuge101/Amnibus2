@@ -56,10 +56,39 @@ namespace Dungeons
             // 部屋をつなぐ通路を作る
             ConnectPath();
             
+            // ゴールを設定
+            PlaceGoal();
+            
             // マップ情報を出力
             _layer2D.Dump();
         }
-        
+
+        private void PlaceGoal()
+        {
+            List<Vector2Int> floorPositions = new List<Vector2Int>();
+
+            // 床の位置を全部集める
+            for (int x = 0; x < WIDTH; ++x)
+            {
+                for (int y = 0; y < HEIGHT; ++y)
+                {
+                    if (_layer2D.Get(x, y) == Chip.FLOOR)
+                    {
+                        floorPositions.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+
+            // プレイヤー位置を(0,0)と仮定して、それ以外なら配置可能
+            Vector2Int _goalPosition = Vector2Int.zero;
+            while (_goalPosition == Vector2Int.zero)
+            {
+                _goalPosition = floorPositions[Random.Range(0, floorPositions.Count)];
+            }
+            
+            _layer2D.Set(_goalPosition.x, _goalPosition.y, Chip.GOAL);
+        }
+
         /// <summary>
         /// 全区画を分割
         /// </summary>
@@ -105,11 +134,11 @@ namespace Dungeons
         private void CreatePath(DgDivision div1, DgDivision div2)
         {
             // 通路の開始位置を決める
-            int x1 = Random.Range(div1.Room.Left, div1.Room.Right);
-            int y1 = Random.Range(div1.Room.Top, div1.Room.Bottom);
+            int x1 = Random.Range(div1.Room.Left + 1, div1.Room.Right - 1);
+            int y1 = Random.Range(div1.Room.Top + 1, div1.Room.Bottom - 1);
             
-            int x2 = Random.Range(div2.Room.Left, div2.Room.Right);
-            int y2 = Random.Range(div2.Room.Top, div2.Room.Bottom);
+            int x2 = Random.Range(div2.Room.Left + 1, div2.Room.Right - 1);
+            int y2 = Random.Range(div2.Room.Top + 1, div2.Room.Bottom - 1);
             
             // L字型をランダムで生成
             if(Random.Range(0, 2) == 0)
@@ -122,7 +151,7 @@ namespace Dungeons
             {
                 // 縦->横
                 CreateVerticalPath(x1, y1, y2);
-                CreateHorizontalPath(x1, y1, y2);
+                CreateHorizontalPath(x1, x2, y2);
             }
         }
 

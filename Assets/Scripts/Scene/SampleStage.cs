@@ -1,5 +1,7 @@
 ﻿using Dungeons;
+using MapObject;
 using Scene.Common;
+using UniRx;
 using Unity.Cinemachine;
 using UnityEngine;
 using Utils;
@@ -44,6 +46,13 @@ namespace Scene
             // Cinemachineのターゲットをプレイヤーに設定
             var cameraInitializer = new CameraInitializer();
             cameraInitializer.SetupFollow(virtualCamera, player);
+
+            Goal.OnGoalReachedRx
+                .TakeUntilDestroy(this)
+                .Subscribe(_ =>
+                {
+                    Debug.Log("Goal Reached");
+                }).AddTo(this);
         }
     }
 }
