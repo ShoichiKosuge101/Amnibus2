@@ -7,8 +7,29 @@ namespace Dungeons
         : MonoBehaviour
     {
         // Prefab
+        public GameObject playerPrefab;
         public GameObject floorPrefab;
         public GameObject wallPrefab;
+        
+        private GameObject _player;
+        
+        /// <summary>
+        /// プレイヤーの生成
+        /// </summary>
+        /// <param name="position"></param>
+        public void SpawnPlayer(in Vector2 position)
+        {
+            _player = Instantiate(playerPrefab, position, Quaternion.identity);
+        }
+        
+        /// <summary>
+        /// プレイヤーを取得
+        /// </summary>
+        /// <returns></returns>
+        public GameObject GetPlayer()
+        {
+            return _player;
+        }
         
         /// <summary>
         /// マップを表示
