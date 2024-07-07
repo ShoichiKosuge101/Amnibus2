@@ -1,15 +1,21 @@
 ﻿using Constants;
 using UnityEngine;
+using Utils;
 
 namespace Dungeons
 {
+    /// <summary>
+    /// マップ描画
+    /// </summary>
     public class MapDisplay
         : MonoBehaviour
     {
         // Prefab
         public GameObject playerPrefab;
-        public GameObject floorPrefab;
-        public GameObject wallPrefab;
+
+        // ObjectPool
+        public ObjectPool floorPool;
+        public ObjectPool wallPool;
         
         private GameObject _player;
         
@@ -47,11 +53,13 @@ namespace Dungeons
 
                     if (dgGenerator.GetChip(x, y) == Chip.FLOOR)
                     {
-                        Instantiate(floorPrefab, position, Quaternion.identity);
+                        GameObject floorPrefab = floorPool.GetObject();
+                        floorPrefab.transform.position = position;
                     }
                     else if (dgGenerator.GetChip(x, y) == Chip.WALL)
                     {
-                        Instantiate(wallPrefab, position, Quaternion.identity);
+                        GameObject wallPrefab = wallPool.GetObject();
+                        wallPrefab.transform.position = position;
                     }
                 }
             }
