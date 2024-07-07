@@ -182,7 +182,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bb9b9977385f4668b73995018a91567d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  playerPrefab: {fileID: 713024385407335327, guid: d2d6c389ce310704d990c79e677015c7, type: 3}
+  playerPrefab: {fileID: 4447016512732337249, guid: d2d6c389ce310704d990c79e677015c7, type: 3}
   goalPrefab: {fileID: 7883594847397722124, guid: f0421fe7c931f9440bb80643802d373a, type: 3}
   floorPool: {fileID: 506980523}
   wallPool: {fileID: 506980522}

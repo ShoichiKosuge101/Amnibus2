@@ -1,4 +1,5 @@
 ﻿using Constants;
+using Controller;
 using UnityEngine;
 using Utils;
 
@@ -11,14 +12,14 @@ namespace Dungeons
         : MonoBehaviour
     {
         // Prefab
-        public GameObject playerPrefab;
+        public PlayerController playerPrefab;
         public GameObject goalPrefab;
 
         // ObjectPool
         public ObjectPool floorPool;
         public ObjectPool wallPool;
         
-        private GameObject _player;
+        private PlayerController _player;
         
         /// <summary>
         /// プレイヤーの生成
@@ -33,7 +34,7 @@ namespace Dungeons
         /// プレイヤーを取得
         /// </summary>
         /// <returns></returns>
-        public GameObject GetPlayer()
+        public PlayerController GetPlayer()
         {
             return _player;
         }
@@ -51,26 +52,24 @@ namespace Dungeons
                 for (int x = 0; x < width; x++)
                 {
                     Vector2 position = new Vector2(x, y);
-
-                    switch (dgGenerator.GetChip(x, y))
+                    
+                    
+                    var mapTile = dgGenerator.GetMapTile(x, y);
+                    if(mapTile == MapTile.Wall)
                     {
-                        case Chip.FLOOR:
-                        {
-                            GameObject floorPrefab = floorPool.GetObject();
-                            floorPrefab.transform.position = position;
-                            break;
-                        }
-                        case Chip.WALL:
-                        {
-                            GameObject wallPrefab = wallPool.GetObject();
-                            wallPrefab.transform.position = position;
-                            break;
-                        }
-                        case Chip.GOAL:
-                        {
-                            Instantiate(goalPrefab, position, Quaternion.identity);
-                            break;
-                        }
+                        GameObject wallPrefab = wallPool.GetObject();
+                        wallPrefab.transform.position = position;
+                        continue;
+                    }
+                    if(mapTile == MapTile.Floor)
+                    {
+                        GameObject floorPrefab = floorPool.GetObject();
+                        floorPrefab.transform.position = position;
+                        continue;
+                    }
+                    if (mapTile == MapTile.Goal)
+                    {
+                        Instantiate(goalPrefab, position, Quaternion.identity);
                     }
                 }
             }

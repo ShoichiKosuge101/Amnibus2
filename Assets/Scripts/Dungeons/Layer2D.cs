@@ -15,7 +15,7 @@ namespace Dungeons
         private int _height;
         public int Height => _height;
         
-        private Chip[,] _values;
+        private MapTile[,] _values;
 
         /// <summary>
         /// コンストラクタ
@@ -46,7 +46,7 @@ namespace Dungeons
         {
             _width = width;
             _height = height;
-            _values = new Chip[width, height];
+            _values = new MapTile[width, height];
         }
         
         // 領域外かどうかを判定
@@ -59,21 +59,21 @@ namespace Dungeons
         }
         
         // 値の取得
-        public Chip Get(in int x, in int y)
+        public MapTile Get(in int x, in int y)
         {
             return !IsOutOfRange(x, y) 
                 ? _values[x, y] 
-                : 0;
+                : MapTile.Floor;
         }
         
         // 値の取得
-        public Chip Get(in Vector2Int position)
+        public MapTile Get(in Vector2Int position)
         {
             return Get(position.x, position.y);
         }
         
         // 値の設定
-        public void Set(in int x, in int y, in Chip value)
+        public void Set(in int x, in int y, in MapTile value)
         {
             if (!IsOutOfRange(x, y))
             {
@@ -85,7 +85,7 @@ namespace Dungeons
         /// 特定の値で埋める
         /// </summary>
         /// <param name="value"></param>
-        public void Fill(in Chip value)
+        public void Fill(in MapTile value)
         {
             for (var x = 0; x < _width; x++)
             {
@@ -102,7 +102,7 @@ namespace Dungeons
             in int y, 
             in int width, 
             in int height, 
-            in Chip value
+            in MapTile value
             )
         {
             // iがxからx+widthまで
@@ -122,7 +122,7 @@ namespace Dungeons
             in int top, 
             in int right, 
             in int bottom, 
-            in Chip value
+            in MapTile value
             )
         {
             FillRect(left, top, right - left, bottom - top, value);
@@ -132,7 +132,7 @@ namespace Dungeons
         public void FillRect(
             in Vector2Int position, 
             in Vector2Int size, 
-            in Chip value
+            in MapTile value
             )
         {
             FillRect(position.x, position.y, size.x, size.y, value);
@@ -148,7 +148,7 @@ namespace Dungeons
                 var line = "";
                 for (var x = 0; x < _width; x++)
                 {
-                    line += Get(x, y) == Chip.WALL ? "■" : "□";
+                    line += Get(x, y) == MapTile.Wall ? "■" : "□";
                 }
                 Debug.Log(line);
             }

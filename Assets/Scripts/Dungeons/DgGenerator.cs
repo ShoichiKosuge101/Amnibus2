@@ -11,6 +11,7 @@ namespace Dungeons
     public class DgGenerator
     {
         private readonly Layer2D _layer2D = null;
+        public Layer2D Layer2D => _layer2D;
         
         private readonly Stack<DgDivision> _divisions = new Stack<DgDivision>();
         
@@ -38,7 +39,7 @@ namespace Dungeons
             _layer2D = new Layer2D(WIDTH, HEIGHT);
             
             // 全てを壁で埋める
-            _layer2D.Fill(Chip.WALL);
+            _layer2D.Fill(MapTile.Wall);
             
             // マップサイズの中でまずは1つの区画を作る
             // 0を考慮しているので、-1している
@@ -72,21 +73,21 @@ namespace Dungeons
             {
                 for (int y = 0; y < HEIGHT; ++y)
                 {
-                    if (_layer2D.Get(x, y) == Chip.FLOOR)
+                    if (_layer2D.Get(x, y) == MapTile.Floor)
                     {
                         floorPositions.Add(new Vector2Int(x, y));
                     }
                 }
             }
 
-            // プレイヤー位置を(0,0)と仮定して、それ以外なら配置可能
-            Vector2Int _goalPosition = Vector2Int.zero;
-            while (_goalPosition == Vector2Int.zero)
+            // プレイヤー位置を(1,1)と仮定して、それ以外なら配置可能
+            Vector2Int _goalPosition = Vector2Int.one;
+            while (_goalPosition == Vector2Int.one)
             {
                 _goalPosition = floorPositions[Random.Range(0, floorPositions.Count)];
             }
             
-            _layer2D.Set(_goalPosition.x, _goalPosition.y, Chip.GOAL);
+            _layer2D.Set(_goalPosition.x, _goalPosition.y, MapTile.Goal);
         }
 
         /// <summary>
@@ -168,7 +169,7 @@ namespace Dungeons
             
             for (int y = top; y <= bottom; ++y)
             {
-                _layer2D.Set(x1, y, Chip.FLOOR);
+                _layer2D.Set(x1, y, MapTile.Floor);
             }
         }
 
@@ -185,7 +186,7 @@ namespace Dungeons
             
             for (int x = left; x <= right; ++x)
             {
-                _layer2D.Set(x, y1, Chip.FLOOR);
+                _layer2D.Set(x, y1, MapTile.Floor);
             }
         }
 
@@ -237,7 +238,7 @@ namespace Dungeons
             {
                 for (int y = divRoom.Top; y < divRoom.Bottom; ++y)
                 {
-                    _layer2D.Set(x, y, Chip.FLOOR);
+                    _layer2D.Set(x, y, MapTile.Floor);
                 }
             }
         }
@@ -376,7 +377,7 @@ namespace Dungeons
             return size >= 2 * (MIN_ROOM_SIZE + OUTER_MARGIN) + 1;
         }
         
-        public Chip GetChip(int x, int y)
+        public MapTile GetMapTile(int x, int y)
         {
             return _layer2D.Get(x, y);
         }
