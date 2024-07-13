@@ -125,6 +125,7 @@ namespace Dungeons
             in MapTile value
             )
         {
+            Debug.Log($"Filling rectangle from ({left}, {top}) to ({right}, {bottom})");
             FillRect(left, top, right - left, bottom - top, value);
         }
         
