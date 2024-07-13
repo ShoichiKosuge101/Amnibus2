@@ -18,8 +18,8 @@ namespace Dungeons
         /// <summary>
         /// 通路矩形
         /// </summary>
-        public DgRect Path { get; private set; }
-
+        public DgRect Road { get; private set; }
+        
         /// <summary>
         /// コンストラクタ
         /// </summary>
@@ -36,6 +36,19 @@ namespace Dungeons
         {
             Outer.Dump();
             Room.Dump();
+        }
+
+        /// <summary>
+        /// 道を作成
+        /// </summary>
+        /// <param name="left"></param>
+        /// <param name="top"></param>
+        /// <param name="right"></param>
+        /// <param name="bottom"></param>
+        public void CreateRoad(int left, int top, int right, int bottom)
+        {
+            Road = new DgRect();
+            Road.Set(left, top, right, bottom);
         }
     }
 }
