@@ -57,14 +57,8 @@ namespace Dungeons
             // 部屋同士をつなぐ
             ConnectRooms();
             
-            // // 部屋をつなぐ通路を作る
-            // ConnectPath();
-            
             // ゴールを設定
             PlaceGoal();
-            
-            // // マップ情報を出力
-            // _layer2D.Dump();
         }
 
         private void ConnectRooms()
@@ -79,9 +73,6 @@ namespace Dungeons
 
                 // ２つの部屋を接続する
                 CreateRoad(room1, room2);
-                
-                // // 通路を作る
-                // CreatePath(room1, room2);
             }
         }
 
@@ -243,6 +234,9 @@ namespace Dungeons
             _layer2D.FillRect4Point(x, top, x + 1, bottom + 1, MapTile.Floor);
         }
 
+        /// <summary>
+        /// ゴールを配置
+        /// </summary>
         private void PlaceGoal()
         {
             List<Vector2Int> floorPositions = new List<Vector2Int>();
@@ -286,87 +280,6 @@ namespace Dungeons
                 }
             }
         }
-
-        // /// <summary>
-        // /// 通路を接続
-        // /// </summary>
-        // private void ConnectPath()
-        // {
-        //     // リスト化
-        //     var divisions = _divisions.ToList();
-        //     
-        //     for (int i = 0; i < _divisions.Count - 1; ++i)
-        //     {
-        //         // リストの前後区画は必ず接続する
-        //         var div1 = divisions[i];
-        //         var div2 = divisions[i + 1];
-        //         
-        //         // 通路を作る
-        //         CreatePath(div1, div2);
-        //     }
-        // }
-        // /// <summary>
-        // /// 通路を作成
-        // /// </summary>
-        // /// <param name="div1"></param>
-        // /// <param name="div2"></param>
-        // private void CreatePath(DgDivision div1, DgDivision div2)
-        // {
-        //     // 通路の開始位置を決める
-        //     int x1 = Random.Range(div1.Room.Left + 1, div1.Room.Right - 1);
-        //     int y1 = Random.Range(div1.Room.Top + 1, div1.Room.Bottom - 1);
-        //     
-        //     int x2 = Random.Range(div2.Room.Left + 1, div2.Room.Right - 1);
-        //     int y2 = Random.Range(div2.Room.Top + 1, div2.Room.Bottom - 1);
-        //     
-        //     // L字型をランダムで生成
-        //     if(Random.Range(0, 2) == 0)
-        //     {
-        //         // 横->縦
-        //         CreateHorizontalPath(x1, x2, y1);
-        //         CreateVerticalPath(x2, y1, y2);
-        //     }
-        //     else
-        //     {
-        //         // 縦->横
-        //         CreateVerticalPath(x1, y1, y2);
-        //         CreateHorizontalPath(x1, x2, y2);
-        //     }
-        // }
-
-        // /// <summary>
-        // /// 縦の通路を作成
-        // /// </summary>
-        // /// <param name="x1"></param>
-        // /// <param name="y1"></param>
-        // /// <param name="y2"></param>
-        // private void CreateVerticalPath(int x1, int y1, int y2)
-        // {
-        //     int top = Mathf.Min(y1, y2);
-        //     int bottom = Mathf.Max(y1, y2);
-        //     
-        //     for (int y = top; y <= bottom; ++y)
-        //     {
-        //         _layer2D.Set(x1, y, MapTile.Floor);
-        //     }
-        // }
-        //
-        // /// <summary>
-        // /// 横の通路を作成
-        // /// </summary>
-        // /// <param name="x1"></param>
-        // /// <param name="x2"></param>
-        // /// <param name="y1"></param>
-        // private void CreateHorizontalPath(int x1, int x2, int y1)
-        // {
-        //     int left = Mathf.Min(x1, x2);
-        //     int right = Mathf.Max(x1, x2);
-        //     
-        //     for (int x = left; x <= right; ++x)
-        //     {
-        //         _layer2D.Set(x, y1, MapTile.Floor);
-        //     }
-        // }
 
         /// <summary>
         /// 部屋を作成
@@ -529,8 +442,6 @@ namespace Dungeons
                     lastDivision.Outer.Bottom
                     );
             }
-            // Debug.Log($"Child: {childDivision.Outer.Left}, {childDivision.Outer.Top}, {childDivision.Outer.Right}, {childDivision.Outer.Bottom}");
-            // Debug.Log($"Last: {lastDivision.Outer.Left}, {lastDivision.Outer.Top}, {lastDivision.Outer.Right}, {lastDivision.Outer.Bottom}");
 
             // 最後に分割した区画を追加
             // 追加順が次の分割に関わるので、ランダムな順番で追加
@@ -560,6 +471,12 @@ namespace Dungeons
             return size >= 2 * (MIN_ROOM_SIZE + OUTER_MARGIN) + 1;
         }
         
+        /// <summary>
+        /// マップ情報を取得
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
         public MapTile GetMapTile(int x, int y)
         {
             return _layer2D.Get(x, y);
