@@ -20,8 +20,8 @@ namespace Scene
     {
         public CinemachineCamera virtualCamera;
         
-        public int width = 20;
-        public int height = 20;
+        [SerializeField]
+        private DungeonData dungeonData;
         
         /// <summary>
         /// シーンのサービスを登録
@@ -40,7 +40,7 @@ namespace Scene
         protected override void InitializeScene()
         {
             // シーンの初期化処理を記述
-            var dgGenerator = new StandardDungeonFactory().CreateDungeon(width, height);
+            var dgGenerator = new StandardDungeonFactory().CreateDungeon(dungeonData.Width, dungeonData.Height);
             
             // 最終的なマップ情報をマップ管理クラスに登録
             var mapManager = ServiceLocator.Instance.Resolve<IMapManager>();
