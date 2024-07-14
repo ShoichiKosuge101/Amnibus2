@@ -1,5 +1,6 @@
 ﻿using Constants;
 using Dungeons;
+using Dungeons.Factory;
 using Helper;
 using UnityEditor;
 using UnityEngine;
@@ -98,7 +99,7 @@ namespace Editor
         /// </summary>
         private void GenerateDungeon()
         {
-            _dgGenerator = new DgGenerator();
+            _dgGenerator = new StandardDungeonFactory().CreateDungeon(_testComponent.width, _testComponent.height);
             _layer2D = _dgGenerator.Layer2D;
             
             // 既存のprefabをクリア

@@ -1,5 +1,6 @@
 ﻿using Controller;
 using Dungeons;
+using Dungeons.Factory;
 using Manager;
 using Manager.Interface;
 using Scene.Common;
@@ -19,6 +20,9 @@ namespace Scene
     {
         public CinemachineCamera virtualCamera;
         
+        public int width = 20;
+        public int height = 20;
+        
         /// <summary>
         /// シーンのサービスを登録
         /// </summary>
@@ -36,8 +40,7 @@ namespace Scene
         protected override void InitializeScene()
         {
             // シーンの初期化処理を記述
-            var dgInitializer = new DungeonFactory();
-            var dgGenerator = dgInitializer.GenerateDungeon();
+            var dgGenerator = new StandardDungeonFactory().CreateDungeon(width, height);
             
             // 最終的なマップ情報をマップ管理クラスに登録
             var mapManager = ServiceLocator.Instance.Resolve<IMapManager>();
@@ -51,7 +54,7 @@ namespace Scene
             mapDisplay.SpawnPlayer(mapManager.GetRandomFloor());
             var player = mapDisplay.GetPlayer();
             
-            // Cinemachineのターゲットをプレイヤーに設定
+            // CineMachineのターゲットをプレイヤーに設定
             var cameraInitializer = new CameraInitializer();
             cameraInitializer.SetupFollow(virtualCamera, player.gameObject);
             

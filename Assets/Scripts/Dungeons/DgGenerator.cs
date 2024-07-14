@@ -16,10 +16,8 @@ namespace Dungeons
         private readonly Stack<DgDivision> _divisions = new Stack<DgDivision>();
         public IEnumerable<DgDivision> Divisions => _divisions;
         
-        private const int WIDTH = 20;
-        public int Width => WIDTH;
-        private const int HEIGHT = 20;
-        public int Height => HEIGHT;
+        public int Width { get; private set; }
+        public int Height { get; private set; }
         
         // 区画の最小サイズ
         private const int MIN_ROOM_SIZE = 5;
@@ -34,17 +32,29 @@ namespace Dungeons
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public DgGenerator()
+        public DgGenerator(int width, int height)
         {
-            // 初期化
-            _layer2D = new Layer2D(WIDTH, HEIGHT);
+            Width = width;
+            Height = height;
             
+            // 初期化
+            _layer2D = new Layer2D(Width, Height);
+
+            // ダンジョン生成
+            Generate();
+        }
+
+        /// <summary>
+        /// ダンジョン生成
+        /// </summary>
+        public void Generate()
+        {
             // 全てを壁で埋める
             _layer2D.Fill(MapTile.Wall);
             
             // マップサイズの中でまずは1つの区画を作る
             // 0を考慮しているので、-1している
-            CreateDivision(0, 0, WIDTH - 1, HEIGHT - 1);
+            CreateDivision(0, 0, Width - 1, Height - 1);
             
             // 区画を分割
             SplitAllDivision();
@@ -234,9 +244,9 @@ namespace Dungeons
             List<Vector2Int> floorPositions = new List<Vector2Int>();
 
             // 床の位置を全部集める
-            for (int x = 0; x < WIDTH; ++x)
+            for (int x = 0; x < Width; ++x)
             {
-                for (int y = 0; y < HEIGHT; ++y)
+                for (int y = 0; y < Height; ++y)
                 {
                     if (_layer2D.Get(x, y) == MapTile.Floor)
                     {
