@@ -15,6 +15,7 @@ namespace Editor
     {
         private Layer2D _layer2D;
 
+        private DgGenerator _dgGenerator;
         private TestComponent _testComponent;
             
         /// <summary>
@@ -52,8 +53,33 @@ namespace Editor
             {
                 return;
             }
+            
+            // 区画と部屋の範囲を描画
+            Handles.color = Color.red;
+            foreach (var division in _dgGenerator.Divisions)
+            {
+                DrawRect(division.Outer, Color.red);
+                DrawRect(division.Room, Color.green);
+            }
         }
 
+        /// <summary>
+        /// 四角形を描画するヘルパー関数
+        /// </summary>
+        private void DrawRect(DgRect rect, Color color)
+        {
+            Handles.color = color;
+            Vector2 topLeft = new Vector2(rect.Left, rect.Top);
+            Vector2 topRight = new Vector2(rect.Right, rect.Top);
+            Vector2 bottomLeft = new Vector2(rect.Left, rect.Bottom);
+            Vector2 bottomRight = new Vector2(rect.Right, rect.Bottom);
+
+            Handles.DrawLine(topLeft, topRight);
+            Handles.DrawLine(topRight, bottomRight);
+            Handles.DrawLine(bottomRight, bottomLeft);
+            Handles.DrawLine(bottomLeft, topLeft);
+        }
+        
         /// <summary>
         /// Prefabの生成
         /// </summary>
@@ -72,15 +98,15 @@ namespace Editor
         /// </summary>
         private void GenerateDungeon()
         {
-            var dgGenerator = new DgGenerator();
-            _layer2D = dgGenerator.Layer2D;
+            _dgGenerator = new DgGenerator();
+            _layer2D = _dgGenerator.Layer2D;
             
             // 既存のprefabをクリア
             ClearExistingPrefabs();
             
-            for (int x = 0; x < dgGenerator.Width; x++)
+            for (int x = 0; x < _dgGenerator.Width; x++)
             {
-                for (int y = 0; y < dgGenerator.Height; y++)
+                for (int y = 0; y < _dgGenerator.Height; y++)
                 {
                     var tile = _layer2D.Get(x, y);
                     Vector3 position = new Vector2(x, y);

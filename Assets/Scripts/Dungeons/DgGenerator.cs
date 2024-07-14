@@ -14,6 +14,7 @@ namespace Dungeons
         public Layer2D Layer2D => _layer2D;
         
         private readonly Stack<DgDivision> _divisions = new Stack<DgDivision>();
+        public IEnumerable<DgDivision> Divisions => _divisions;
         
         private const int WIDTH = 20;
         public int Width => WIDTH;
@@ -61,6 +62,9 @@ namespace Dungeons
             PlaceGoal();
         }
 
+        /// <summary>
+        /// 部屋をつなぐ
+        /// </summary>
         private void ConnectRooms()
         {
             // 接続する２つの部屋を決める(隣接する部屋は接続できる)
@@ -79,81 +83,82 @@ namespace Dungeons
         /// <summary>
         /// 部屋同士をつなぐ
         /// </summary>
-        /// <param name="room1"></param>
-        /// <param name="room2"></param>
-        private void CreateRoad(DgDivision room1, DgDivision room2)
+        /// <param name="dgDiv1"></param>
+        /// <param name="dgDiv2"></param>
+        private void CreateRoad(DgDivision dgDiv1, DgDivision dgDiv2)
         {
-            Debug.Log($"Room1: {room1.Outer.Left}, {room1.Outer.Top}, {room1.Outer.Right}, {room1.Outer.Bottom}");
-            Debug.Log($"Room2: {room2.Outer.Left}, {room2.Outer.Top}, {room2.Outer.Right}, {room2.Outer.Bottom}");
+            Debug.Log($"Room1: {dgDiv1.Outer.Left}, {dgDiv1.Outer.Top}, {dgDiv1.Outer.Right}, {dgDiv1.Outer.Bottom}");
+            Debug.Log($"Room2: {dgDiv2.Outer.Left}, {dgDiv2.Outer.Top}, {dgDiv2.Outer.Right}, {dgDiv2.Outer.Bottom}");
             
             // 部屋がどの面で接しているかを調べる
-            if (room1.Outer.Bottom == room2.Outer.Top)
+            if (dgDiv1.Outer.Bottom == dgDiv2.Outer.Top)
             {
                 // 上下に接している場合
-                CreateVerticalRoad(room1, room2);
+                CreateVerticalRoad(dgDiv1, dgDiv2);
                 return;
             }
             
-            if(room1.Outer.Top == room2.Outer.Bottom)
+            if(dgDiv1.Outer.Top == dgDiv2.Outer.Bottom)
             {
                 // 下上に接している場合
-                CreateVerticalRoad(room2, room1);
+                CreateVerticalRoad(dgDiv2, dgDiv1);
                 return;
             }
 
             // 左右で面している場合
-            if (room1.Outer.Right == room2.Outer.Left)
+            if (dgDiv1.Outer.Right == dgDiv2.Outer.Left)
             {
                 // 左右に接している場合
-                CreateHorizontalRoad(room1, room2);
+                CreateHorizontalRoad(dgDiv1, dgDiv2);
                 return;
             }
-            if (room1.Outer.Left == room2.Outer.Right)
+            if (dgDiv1.Outer.Left == dgDiv2.Outer.Right)
             {
                 // 右左に接している場合
-                CreateHorizontalRoad(room2, room1);
+                CreateHorizontalRoad(dgDiv2, dgDiv1);
             }
         }
 
         /// <summary>
         /// 垂直方向の道を作成
         /// </summary>
-        /// <param name="room1"></param>
-        /// <param name="room2"></param>
-        private void CreateHorizontalRoad(DgDivision room1, DgDivision room2)
+        /// <param name="leftDiv"></param>
+        /// <param name="rightDiv"></param>
+        private void CreateHorizontalRoad(DgDivision leftDiv, DgDivision rightDiv)
         {
             // 部屋の横幅から道を作る点を決める
-            int x1 = room1.Room.Right;
-            int x2 = room2.Room.Left;
-            int y = Random.Range(Mathf.Max(room1.Room.Top, room2.Room.Top), Mathf.Min(room1.Room.Bottom, room2.Room.Bottom));
-
-            // x1とx2が同じ場合は一つずらす
-            if (x1 == x2)
-            {
-                x2++;
-            }
+            int y1 = Random.Range(leftDiv.Room.Top, leftDiv.Room.Bottom);
+            int y2 = Random.Range(rightDiv.Room.Top, rightDiv.Room.Bottom);
+            int x = leftDiv.Outer.Right;
             
-            // 部屋1の右側と部屋2の左側をつなぐ
-            room1.CreateRoad(
-                room1.Room.Right,
-                y,
-                x1, 
-                y + 1
-            );
-
-            // 部屋2の右側と部屋1の左側をつなぐ
-            room2.CreateRoad(
-                x2, 
-                y, 
-                room2.Room.Left, 
-                y + 1
+            // 部屋1から右に線を伸ばす
+            leftDiv.CreateRoad(
+                leftDiv.Room.Right, 
+                y1, 
+                x, 
+                y1 + 1
             );
             
-            FillRoom(room1.Road);
-            FillRoom(room2.Road);
+            // 部屋2から左に線を伸ばす
+            rightDiv.CreateRoad(
+                x, 
+                y2, 
+                rightDiv.Room.Left, 
+                y2 + 1
+            );
+            
+            FillRoom(leftDiv.Road);
+            FillRoom(rightDiv.Road);
             
             // 道をつなぐ
-            FillHLine(x1, x2, y);
+            if(y1 < y2)
+            {
+                FillVLine(y1, y2, x);
+            }
+            else
+            {
+                FillVLine(y2, y1, x);
+            }
         }
         
         /// <summary>
@@ -164,12 +169,6 @@ namespace Dungeons
         /// <param name="y"></param>
         private void FillHLine(int left, int right, int y)
         {
-            // 反対の場合はスワップする
-            if (left > right)
-            {
-                (left, right) = (right, left);
-            }
-            
             Debug.Log($"Filling horizontal line from ({left}, {y}) to ({right}, {y})");
             _layer2D.FillRect4Point(left, y, right + 1, y + 1, MapTile.Floor);
         }
@@ -177,44 +176,43 @@ namespace Dungeons
         /// <summary>
         /// 部屋から縦方向の道を作る
         /// </summary>
-        /// <param name="room1"></param>
-        /// <param name="room2"></param>
-        private void CreateVerticalRoad(DgDivision room1, DgDivision room2)
+        /// <param name="topDiv"></param>
+        /// <param name="bottomDiv"></param>
+        private void CreateVerticalRoad(DgDivision topDiv, DgDivision bottomDiv)
         {
             // 部屋の縦幅から道を作る点を決める
-            int y1 = room1.Room.Bottom;
-            int y2 = room2.Room.Top;
-            int x = Random.Range(Mathf.Max(room1.Room.Left, room2.Room.Left), Mathf.Min(room1.Room.Right, room2.Room.Right));;
+            int x1 = Random.Range(topDiv.Room.Left, topDiv.Room.Right);
+            int x2 = Random.Range(bottomDiv.Room.Left, bottomDiv.Room.Right);
+            int y = topDiv.Outer.Bottom;
             
-            // y1とy2が同じ場合は一つずらす
-            if (y1 == y2)
-            {
-                y2++;
-            }
-            
-            Debug.Log($"Creating vertical road from ({x}, {y1}) to ({x}, {y2})");
-
-            // 部屋1の下側と部屋2の上側をつなぐ
-            room1.CreateRoad(
-                x,
-                room1.Room.Bottom,
-                x + 1,
-                y1
-            );
-                
-            // 部屋2の下側と部屋1の上側をつなぐ
-            room2.CreateRoad(
-                x,
-                y2,
-                x + 1,
-                room2.Room.Top
+            // 部屋1から下に線を伸ばす
+            topDiv.CreateRoad(
+                x1, 
+                topDiv.Room.Bottom, 
+                x1 + 1, 
+                y
             );
             
-            FillRoom(room1.Road);
-            FillRoom(room2.Road);
+            // 部屋2から上に線を伸ばす
+            bottomDiv.CreateRoad(
+                x2, 
+                y, 
+                x2 + 1, 
+                bottomDiv.Room.Top
+            );
+            
+            FillRoom(topDiv.Road);
+            FillRoom(bottomDiv.Road);
             
             // 道をつなぐ
-            FillVLine(y1, y2, x);
+            if(x1 < x2)
+            {
+                FillHLine(x1, x2, y);
+            }
+            else
+            {
+                FillHLine(x2, x1, y);
+            }
         }
         
         /// <summary>
@@ -225,12 +223,6 @@ namespace Dungeons
         /// <param name="x"></param>
         private void FillVLine(int top, int bottom, int x)
         {
-            // 反対の場合はスワップする
-            if (top > bottom)
-            {
-                (top, bottom) = (bottom, top);
-            }
-            
             _layer2D.FillRect4Point(x, top, x + 1, bottom + 1, MapTile.Floor);
         }
 
