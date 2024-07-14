@@ -104,17 +104,6 @@ namespace Editor
                 }
             }
             
-            // デバッグ出力
-            for (int y = _layer2D.Height - 1; y >= 0; y--)
-            {
-                string line = "";
-                for (int x = 0; x < _layer2D.Width; x++)
-                {
-                    line += _layer2D.Get(x, y) == MapTile.Floor ? "." : "#";
-                }
-                Debug.Log(line);
-            }
-            
             SceneView.RepaintAll();
         }
 

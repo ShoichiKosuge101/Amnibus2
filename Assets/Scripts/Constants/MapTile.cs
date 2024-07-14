@@ -2,6 +2,9 @@
 
 namespace Constants
 {
+    /// <summary>
+    /// マップ形状
+    /// </summary>
     [Flags]
     public enum CellProperties
     {
@@ -16,6 +19,10 @@ namespace Constants
         FLOOR    = 0b00000000,
     }
     
+    /// <summary>
+    /// マップチップ
+    /// </summary>
+    /// <param name="Properties"></param>
     public record MapTile(CellProperties Properties)
     {
         public bool IsWall     => Properties.HasFlag(CellProperties.WALL);
