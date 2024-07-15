@@ -17,9 +17,27 @@ namespace Manager
         
         public Subject<Unit> OnGoalReachedRx { get; } = new();
 
+        /// <summary>
+        /// 初期化
+        /// </summary>
+        /// <param name="map"></param>
+        public void Initialize(Layer2D map)
+        {
+            CurrentMap = map;
+            
+            // プレイヤーの生成位置を取得
+            var playerPosition = GetSpawnPlayerPosition();
+            // プレイヤーの座標を登録
+            UpdateMap((int)playerPosition.x, (int)playerPosition.y, MapTile.Player);
+        }
+
         public void SetMap(Layer2D map)
         {
             CurrentMap = map;
+        }
+        public Layer2D GetMap()
+        {
+            return CurrentMap;
         }
 
         public void UpdateMap(int x, int y, MapTile tile)
@@ -47,12 +65,7 @@ namespace Manager
             // 移動後の座標をプレイヤーにする
             CurrentMap.Set(afterPosition.x, afterPosition.y, MapTile.Player);
         }
-
-        public Layer2D GetMap()
-        {
-            return CurrentMap;
-        }
-
+        
         /// <summary>
         /// ランダムな床の座標を取得
         /// </summary>
@@ -80,6 +93,15 @@ namespace Manager
         public bool CanThrough(int x, int y)
         {
             return !CurrentMap.Get(x, y).IsWall;
+        }
+
+        /// <summary>
+        /// プレイヤーの生成位置を返す
+        /// </summary>
+        /// <returns></returns>
+        public Vector2 GetSpawnPlayerPosition()
+        {
+            return GetRandomFloor();
         }
     }
 }

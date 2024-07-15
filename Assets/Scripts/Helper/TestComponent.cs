@@ -15,5 +15,9 @@ namespace Helper
         
         public int width = 20;
         public int height = 20;
+        
+        public int minRoomSize = 5;
+        public int maxRoomSize = 10;
+        public int outerMargin = 3;
     }
 }

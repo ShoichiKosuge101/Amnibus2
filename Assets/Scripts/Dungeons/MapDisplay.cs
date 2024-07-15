@@ -1,5 +1,6 @@
 ﻿using Constants;
 using Controller;
+using Manager.Interface;
 using UnityEngine;
 using Utils;
 
@@ -25,7 +26,7 @@ namespace Dungeons
         /// プレイヤーの生成
         /// </summary>
         /// <param name="position"></param>
-        public void SpawnPlayer(in Vector2 position)
+        private void SpawnPlayer(in Vector2 position)
         {
             _player = Instantiate(playerPrefab, position, Quaternion.identity);
         }
@@ -42,19 +43,17 @@ namespace Dungeons
         /// <summary>
         /// マップを表示
         /// </summary>
-        public void DisplayMap(DgGenerator dgGenerator)
+        public void DisplayMap(IMapManager mapManager)
         {
-            int width = dgGenerator.Width;
-            int height = dgGenerator.Height;
+            var layer2D = mapManager.GetMap();
 
-            for (int y = 0; y < height; y++)
+            for (int y = 0; y < layer2D.Height; y++)
             {
-                for (int x = 0; x < width; x++)
+                for (int x = 0; x < layer2D.Width; x++)
                 {
                     Vector2 position = new Vector2(x, y);
                     
-                    
-                    var mapTile = dgGenerator.GetMapTile(x, y);
+                    var mapTile = GetMapTile(layer2D, x, y);
                     if(mapTile == MapTile.Wall)
                     {
                         GameObject wallPrefab = wallPool.GetObject();
@@ -71,8 +70,29 @@ namespace Dungeons
                     {
                         Instantiate(goalPrefab, position, Quaternion.identity);
                     }
+                    if(mapTile == MapTile.Player)
+                    {
+                        // まず床を描画
+                        GameObject floorPrefab = floorPool.GetObject();
+                        floorPrefab.transform.position = position;
+                        
+                        // その上にプレイヤーを描画
+                        SpawnPlayer(position);
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// マップ情報を取得
+        /// </summary>
+        /// <param name="layer2D"></param>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        private static MapTile GetMapTile(Layer2D layer2D, int x, int y)
+        {
+            return layer2D.Get(x, y);
         }
     }
 }

@@ -8,9 +8,15 @@ namespace Dungeons.Factory
     public class StandardDungeonFactory
         : IDungeonFactory
     {
-        public DgGenerator CreateDungeon(int width, int height)
+        public IDungeonGenerator CreateDungeon(
+            int width, 
+            int height, 
+            int minRoomSize = 5, 
+            int maxRoomSize = 10, 
+            int outerMargin = 2
+            )
         {
-            return new DgGenerator(width, height);
+            return new DgGenerator(width, height, minRoomSize, maxRoomSize, outerMargin);
         }
     }
 }

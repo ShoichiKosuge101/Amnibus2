@@ -40,18 +40,24 @@ namespace Scene
         protected override void InitializeScene()
         {
             // シーンの初期化処理を記述
-            var dgGenerator = new StandardDungeonFactory().CreateDungeon(dungeonData.Width, dungeonData.Height);
+            var dgGenerator = new StandardDungeonFactory().CreateDungeon(
+                dungeonData.Width, 
+                dungeonData.Height,
+                dungeonData.MinRoomSize,
+                dungeonData.MaxRoomSize,
+                dungeonData.OuterMargin
+                );
             
-            // 最終的なマップ情報をマップ管理クラスに登録
+            // 最終的なマップ情報をマップ管理クラスに渡す
             var mapManager = ServiceLocator.Instance.Resolve<IMapManager>();
-            mapManager.SetMap(dgGenerator.Layer2D);
+            // マップ管理クラスの初期化によってプレイヤー位置を確定
+            mapManager.Initialize(dgGenerator.GetLayer());
             
             // MapDisplayを取得
             var mapDisplay = GetComponent<MapDisplay>();
-            mapDisplay.DisplayMap(dgGenerator);
+            mapDisplay.DisplayMap(mapManager);
             
-            // プレイヤーを生成
-            mapDisplay.SpawnPlayer(mapManager.GetRandomFloor());
+            // プレイヤーを取得
             var player = mapDisplay.GetPlayer();
             
             // CineMachineのターゲットをプレイヤーに設定

@@ -1,7 +1,10 @@
 ﻿using Constants;
 using Dungeons;
 using Dungeons.Factory;
+using Dungeons.Interface;
 using Helper;
+using Manager;
+using Manager.Interface;
 using UnityEditor;
 using UnityEngine;
 
@@ -16,8 +19,10 @@ namespace Editor
     {
         private Layer2D _layer2D;
 
-        private DgGenerator _dgGenerator;
+        private IDungeonGenerator _dgGenerator;
         private TestComponent _testComponent;
+        
+        private IMapManager _mapManager;
             
         /// <summary>
         /// 初期化
@@ -25,6 +30,8 @@ namespace Editor
         private void OnEnable()
         {
             _testComponent = target as TestComponent;
+            
+            _mapManager = new MapManager();
         }
 
         /// <summary>
@@ -55,12 +62,16 @@ namespace Editor
                 return;
             }
             
-            // 区画と部屋の範囲を描画
-            Handles.color = Color.red;
-            foreach (var division in _dgGenerator.Divisions)
+            // 2分木ダンジョンの場合
+            if (_dgGenerator is DgGenerator standardDgGenerator)
             {
-                DrawRect(division.Outer, Color.red);
-                DrawRect(division.Room, Color.green);
+                // 区画と部屋の範囲を描画
+                Handles.color = Color.red;
+                foreach (var division in standardDgGenerator.Divisions)
+                {
+                    DrawRect(division.Outer, Color.red);
+                    DrawRect(division.Room, Color.green);
+                }
             }
         }
 
@@ -99,15 +110,27 @@ namespace Editor
         /// </summary>
         private void GenerateDungeon()
         {
-            _dgGenerator = new StandardDungeonFactory().CreateDungeon(_testComponent.width, _testComponent.height);
-            _layer2D = _dgGenerator.Layer2D;
+            _dgGenerator = new StandardDungeonFactory().CreateDungeon(
+                _testComponent.width, 
+                _testComponent.height,
+                _testComponent.minRoomSize,
+                _testComponent.maxRoomSize,
+                _testComponent.outerMargin
+                );
+            
+            var dgMap2D = _dgGenerator.GetLayer();
+            
+            // マップ管理クラスに登録
+            _mapManager.Initialize(dgMap2D);
+            // 最新のマップ情報を取得
+            _layer2D = _mapManager.GetMap();
             
             // 既存のprefabをクリア
             ClearExistingPrefabs();
             
-            for (int x = 0; x < _dgGenerator.Width; x++)
+            for (int x = 0; x < _layer2D.Width; x++)
             {
-                for (int y = 0; y < _dgGenerator.Height; y++)
+                for (int y = 0; y < _layer2D.Height; y++)
                 {
                     var tile = _layer2D.Get(x, y);
                     Vector3 position = new Vector2(x, y);

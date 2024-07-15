@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Constants;
+using Dungeons.Interface;
 using UnityEngine;
 
 namespace Dungeons
@@ -9,22 +10,31 @@ namespace Dungeons
    /// ダンジョン生成
    /// </summary>
     public class DgGenerator
+        : IDungeonGenerator
     {
         private readonly Layer2D _layer2D = null;
-        public Layer2D Layer2D => _layer2D;
+
+        public Layer2D GetLayer()
+        {
+            return _layer2D;
+        }
         
         private readonly Stack<DgDivision> _divisions = new Stack<DgDivision>();
         public IEnumerable<DgDivision> Divisions => _divisions;
         
-        public int Width { get; private set; }
-        public int Height { get; private set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+
+        private int _minRoomSize;
+        private int _maxRoomSize;
+        private int _outerMargin;
         
-        // 区画の最小サイズ
-        private const int MIN_ROOM_SIZE = 5;
-        // 区画の最大サイズ
-        private const int MAX_SIZE = 10;
-        // 区画間の最小の間隔
-        private const int OUTER_MARGIN = 2;
+        // // 区画の最小サイズ
+        // private const int _minRoomSize = 5;
+        // // 区画の最大サイズ
+        // private const int _maxRoomSize = 10;
+        // // 区画間の最小の間隔
+        // private const int _outerMargin = 2;
         // 乱数範囲調整
         private const int RANDOM_RANGE_OFFSET = 1;
         private const int POS_MARGIN = 1;
@@ -32,10 +42,20 @@ namespace Dungeons
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public DgGenerator(int width, int height)
+        public DgGenerator(
+            int width, 
+            int height, 
+            int minRoomSize, 
+            int maxRoomSize, 
+            int outerMargin
+            )
         {
             Width = width;
             Height = height;
+            
+            _minRoomSize = minRoomSize;
+            _maxRoomSize = maxRoomSize;
+            _outerMargin = outerMargin;
             
             // 初期化
             _layer2D = new Layer2D(Width, Height);
@@ -77,16 +97,37 @@ namespace Dungeons
         /// </summary>
         private void ConnectRooms()
         {
+            var divisions = _divisions.ToList();
+            
             // 接続する２つの部屋を決める(隣接する部屋は接続できる)
-            for(int roomIndex = 0; roomIndex < _divisions.Count - 1; ++roomIndex)
+            for(int i = 0; i < _divisions.Count - 1; ++i)
             {
-                var room1 = _divisions.ElementAt(roomIndex);
-                var room2 = _divisions.ElementAt(roomIndex + 1);
-                
-                Debug.Log($"Connecting Room1: {room1.Outer.Left}, {room1.Outer.Top}, {room1.Outer.Right}, {room1.Outer.Bottom} with Room2: {room2.Outer.Left}, {room2.Outer.Top}, {room2.Outer.Right}, {room2.Outer.Bottom}");
+                for(int j = i + 1; j < _divisions.Count; ++j)
+                {
+                    var dgDiv1 = divisions[i];
+                    var dgDiv2 = divisions[j];
+                    
+                    Debug.Log($"Connecting Room1: " +
+                              $"{dgDiv1.Outer.Left}, " +
+                              $"{dgDiv1.Outer.Top}, " +
+                              $"{dgDiv1.Outer.Right}, " +
+                              $"{dgDiv1.Outer.Bottom} " +
+                              $"with Room2: " +
+                              $"{dgDiv2.Outer.Left}, " +
+                              $"{dgDiv2.Outer.Top}, " +
+                              $"{dgDiv2.Outer.Right}, " +
+                              $"{dgDiv2.Outer.Bottom}"
+                              );
 
-                // ２つの部屋を接続する
-                CreateRoad(room1, room2);
+                    // 接続不可なら次へ
+                    if (!CanConnectRooms(dgDiv1, dgDiv2))
+                    {
+                        continue;
+                    }
+                    
+                    // ２つの部屋を接続する
+                    CreateRoad(dgDiv1, dgDiv2);
+                }
             }
         }
 
@@ -127,6 +168,31 @@ namespace Dungeons
                 // 右左に接している場合
                 CreateHorizontalRoad(dgDiv2, dgDiv1);
             }
+        }
+
+        /// <summary>
+        /// 部屋をつなぐことができるか
+        /// </summary>
+        /// <param name="dgDiv1"></param>
+        /// <param name="dgDiv2"></param>
+        /// <returns></returns>
+        private bool CanConnectRooms(DgDivision dgDiv1, DgDivision dgDiv2)
+        {
+            // 上下で接していれば接続可能
+            if (dgDiv1.Outer.Bottom == dgDiv2.Outer.Top
+                || dgDiv1.Outer.Top == dgDiv2.Outer.Bottom)
+            {
+                return true;
+            }
+            
+            // 左右で接していれば接続可能
+            if (dgDiv1.Outer.Right == dgDiv2.Outer.Left
+                || dgDiv1.Outer.Left == dgDiv2.Outer.Right)
+            {
+                return true;
+            }
+            
+            return false;
         }
 
         /// <summary>
@@ -272,12 +338,13 @@ namespace Dungeons
         {
             while (_divisions.Count > 0)
             {
+                // 縦に分割するか横に分割するかをランダムに決める
                 bool isVertical = Random.Range(0, 2) == 0;
                 
                 // 区画を分割
                 if(!TrySplitDivision(isVertical))
                 {
-                    // 分割できない場合は終了
+                    // 分割できなければ終了
                     break;
                 }
             }
@@ -290,16 +357,16 @@ namespace Dungeons
         private void CreateRoom(DgDivision div)
         {
             // 基準サイズを決める
-            int dw = div.Outer.Width - OUTER_MARGIN;
-            int dh = div.Outer.Height - OUTER_MARGIN;
+            int dw = div.Outer.Width - _outerMargin;
+            int dh = div.Outer.Height - _outerMargin;
             
             // 大きさをランダムに決める
-            int sw = Random.Range(MIN_ROOM_SIZE, dw);
-            int sh = Random.Range(MIN_ROOM_SIZE, dh);
+            int sw = Random.Range(_minRoomSize, dw);
+            int sh = Random.Range(_minRoomSize, dh);
             
             // 最大サイズを超えないようにする
-            sw = Mathf.Min(sw, MAX_SIZE);
-            sh = Mathf.Min(sh, MAX_SIZE);
+            sw = Mathf.Min(sw, _maxRoomSize);
+            sh = Mathf.Min(sh, _maxRoomSize);
             
             // 空きサイズを計算
             int rw = dw - sw;
@@ -354,18 +421,19 @@ namespace Dungeons
             
             Debug.Log($"Created Division: {division.Outer.Left}, {division.Outer.Top}, {division.Outer.Right}, {division.Outer.Bottom}");
         }
-        
+
         /// <summary>
         /// 区画を分割
         /// </summary>
+        /// <param name="division"></param>
         /// <param name="isVertical"></param>
+        /// <returns></returns>
         private bool TrySplitDivision(bool isVertical)
         {
-            // 最後の区画を取得(分割対象)
-            if (!_divisions.TryPop(out DgDivision lastDivision))
+            // 最後の区画を取得
+            if(!_divisions.TryPop(out var lastDivision))
             {
-                Debug.LogError("Division not found.");
-                
+                Debug.LogError("Division is empty.");
                 return false;
             }
             
@@ -383,11 +451,11 @@ namespace Dungeons
                 
                 // 分割区画の右側を使用
                 // 最小のx座標と最大のx座標を取得し、その中でランダムな位置pを決定
-                int min = lastDivision.Outer.Left + (MIN_ROOM_SIZE + OUTER_MARGIN);
-                int max = lastDivision.Outer.Right - (MIN_ROOM_SIZE + OUTER_MARGIN);
+                int min = lastDivision.Outer.Left + (_minRoomSize + _outerMargin);
+                int max = lastDivision.Outer.Right - (_minRoomSize + _outerMargin);
                 // 区画の最大サイズを超えないように調整
                 int distance = max - min;
-                distance = Mathf.Min(distance, MAX_SIZE);
+                distance = Mathf.Min(distance, _maxRoomSize);
                 // 分割位置を決定
                 // minからの距離distanceまでのランダムな位置pを決定
                 int p = min + Random.Range(0, distance + RANDOM_RANGE_OFFSET); // distance + 1 にすることで、maxも含める
@@ -419,11 +487,11 @@ namespace Dungeons
                 
                 // 分割区画の下側を使用
                 // 最小のy座標と最大のy座標を取得し、その中でランダムな位置pを決定
-                int min = lastDivision.Outer.Top + (MIN_ROOM_SIZE + OUTER_MARGIN);
-                int max = lastDivision.Outer.Bottom - (MIN_ROOM_SIZE + OUTER_MARGIN);
+                int min = lastDivision.Outer.Top + (_minRoomSize + _outerMargin);
+                int max = lastDivision.Outer.Bottom - (_minRoomSize + _outerMargin);
                 // 区画の最大サイズを超えないように調整
                 int distance = max - min;
-                distance = Mathf.Min(distance, MAX_SIZE);
+                distance = Mathf.Min(distance, _maxRoomSize);
                 // 分割位置を決定
                 // minからの距離distanceまでのランダムな位置pを決定
                 int p = min + Random.Range(0, distance + RANDOM_RANGE_OFFSET);
@@ -466,11 +534,11 @@ namespace Dungeons
         /// </summary>
         /// <param name="size"></param>
         /// <returns></returns>
-        private static bool CheckDivisionSize(in int size)
+        private bool CheckDivisionSize(in int size)
         {
             // 2分割した区画のサイズが最小サイズを下回る場合は分割しない
             // すなわち、２倍してかつ接続点の道を作るための最低限のサイズ(最小区画サイズ + 外周マージン + 分割線の幅)を確保できるか判定
-            return size >= 2 * (MIN_ROOM_SIZE + OUTER_MARGIN) + 1;
+            return size >= 2 * (_minRoomSize + _outerMargin) + 1;
         }
         
         /// <summary>
