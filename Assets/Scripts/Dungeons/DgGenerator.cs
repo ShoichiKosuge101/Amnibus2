@@ -25,16 +25,10 @@ namespace Dungeons
         public int Width { get; set; }
         public int Height { get; set; }
 
-        private int _minRoomSize;
-        private int _maxRoomSize;
-        private int _outerMargin;
+        private readonly int _minRoomSize;
+        private readonly int _maxRoomSize;
+        private readonly int _outerMargin;
         
-        // // 区画の最小サイズ
-        // private const int _minRoomSize = 5;
-        // // 区画の最大サイズ
-        // private const int _maxRoomSize = 10;
-        // // 区画間の最小の間隔
-        // private const int _outerMargin = 2;
         // 乱数範囲調整
         private const int RANDOM_RANGE_OFFSET = 1;
         private const int POS_MARGIN = 1;
@@ -90,6 +84,9 @@ namespace Dungeons
             
             // ゴールを設定
             PlaceGoal();
+            
+            // アイテムを設定
+            PlaceItems(5);
         }
 
         /// <summary>
@@ -307,6 +304,47 @@ namespace Dungeons
         /// </summary>
         private void PlaceGoal()
         {
+            // 床の位置を全部集める
+            var floorPositions = GetFloors();
+            
+            // ランダムにゴールの位置を決める
+            Vector2Int _goalPosition = floorPositions[Random.Range(0, floorPositions.Count)];
+            
+            _layer2D.Set(_goalPosition.x, _goalPosition.y, MapTile.Goal);
+        }
+        
+        /// <summary>
+        /// アイテムの配置を決める
+        /// </summary>
+        private void PlaceItems(int itemCount)
+        {
+            // 要求数分アイテムを配置
+            for (int i = 0; i < itemCount; ++i)
+            {
+                PlaceItem();
+            }
+        }
+        
+        /// <summary>
+        /// アイテムを配置
+        /// </summary>
+        private void PlaceItem()
+        {
+            // 床の位置を全部集める
+            var floorPositions = GetFloors();
+            
+            // ランダムにアイテムの位置を決める
+            Vector2Int _itemPosition = floorPositions[Random.Range(0, floorPositions.Count)];
+            
+            _layer2D.Set(_itemPosition.x, _itemPosition.y, MapTile.Treasure);
+        }
+        
+        /// <summary>
+        /// 床の位置を全部集める
+        /// </summary>
+        /// <returns></returns>
+        private List<Vector2Int> GetFloors()
+        {
             List<Vector2Int> floorPositions = new List<Vector2Int>();
 
             // 床の位置を全部集める
@@ -321,14 +359,7 @@ namespace Dungeons
                 }
             }
 
-            // プレイヤー位置を(1,1)と仮定して、それ以外なら配置可能
-            Vector2Int _goalPosition = Vector2Int.one;
-            while (_goalPosition == Vector2Int.one)
-            {
-                _goalPosition = floorPositions[Random.Range(0, floorPositions.Count)];
-            }
-            
-            _layer2D.Set(_goalPosition.x, _goalPosition.y, MapTile.Goal);
+            return floorPositions;
         }
 
         /// <summary>
