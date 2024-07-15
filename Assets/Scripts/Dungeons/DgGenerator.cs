@@ -81,12 +81,6 @@ namespace Dungeons
             
             // 部屋同士をつなぐ
             ConnectRooms();
-            
-            // ゴールを設定
-            PlaceGoal();
-            
-            // アイテムを設定
-            PlaceItems(5);
         }
 
         /// <summary>
@@ -297,69 +291,6 @@ namespace Dungeons
         private void FillVLine(int top, int bottom, int x)
         {
             _layer2D.FillRect4Point(x, top, x + 1, bottom + 1, MapTile.Floor);
-        }
-
-        /// <summary>
-        /// ゴールを配置
-        /// </summary>
-        private void PlaceGoal()
-        {
-            // 床の位置を全部集める
-            var floorPositions = GetFloors();
-            
-            // ランダムにゴールの位置を決める
-            Vector2Int _goalPosition = floorPositions[Random.Range(0, floorPositions.Count)];
-            
-            _layer2D.Set(_goalPosition.x, _goalPosition.y, MapTile.Goal);
-        }
-        
-        /// <summary>
-        /// アイテムの配置を決める
-        /// </summary>
-        private void PlaceItems(int itemCount)
-        {
-            // 要求数分アイテムを配置
-            for (int i = 0; i < itemCount; ++i)
-            {
-                PlaceItem();
-            }
-        }
-        
-        /// <summary>
-        /// アイテムを配置
-        /// </summary>
-        private void PlaceItem()
-        {
-            // 床の位置を全部集める
-            var floorPositions = GetFloors();
-            
-            // ランダムにアイテムの位置を決める
-            Vector2Int _itemPosition = floorPositions[Random.Range(0, floorPositions.Count)];
-            
-            _layer2D.Set(_itemPosition.x, _itemPosition.y, MapTile.Treasure);
-        }
-        
-        /// <summary>
-        /// 床の位置を全部集める
-        /// </summary>
-        /// <returns></returns>
-        private List<Vector2Int> GetFloors()
-        {
-            List<Vector2Int> floorPositions = new List<Vector2Int>();
-
-            // 床の位置を全部集める
-            for (int x = 0; x < Width; ++x)
-            {
-                for (int y = 0; y < Height; ++y)
-                {
-                    if (_layer2D.Get(x, y) == MapTile.Floor)
-                    {
-                        floorPositions.Add(new Vector2Int(x, y));
-                    }
-                }
-            }
-
-            return floorPositions;
         }
 
         /// <summary>

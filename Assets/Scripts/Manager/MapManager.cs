@@ -25,6 +25,15 @@ namespace Manager
         {
             CurrentMap = map;
             
+            // ゴールを配置
+            PlaceGoal();
+            
+            // エネミーを配置
+            PlaceEnemies(5);
+            
+            // アイテムを配置
+            PlaceItems(3);
+            
             // プレイヤーの生成位置を取得
             var playerPosition = GetSpawnPlayerPosition();
             // プレイヤーの座標を登録
@@ -53,7 +62,7 @@ namespace Manager
         public void UpdatePlayerPosition(Vector2Int beforePosition, Vector2Int afterPosition)
         {
             // 移動前の座標を床にする
-            CurrentMap.Set(beforePosition.x, beforePosition.y, MapTile.Floor);
+            UpdateMap(beforePosition.x, beforePosition.y, MapTile.Floor);
             
             // ゴールに到達したかどうか
             if (CurrentMap.Get(afterPosition.x, afterPosition.y).IsGoal)
@@ -63,7 +72,7 @@ namespace Manager
             
             // TODO: プレイヤーフラグを渡すが正しい
             // 移動後の座標をプレイヤーにする
-            CurrentMap.Set(afterPosition.x, afterPosition.y, MapTile.Player);
+            UpdateMap(afterPosition.x, afterPosition.y, MapTile.Player);
         }
         
         /// <summary>
@@ -103,5 +112,71 @@ namespace Manager
         {
             return GetRandomFloor();
         }
+        
+        
+        /// <summary>
+        /// ゴールを配置
+        /// </summary>
+        private void PlaceGoal()
+        {
+            // 床の位置を全部集める
+            var floorPositions = CurrentMap.GetFloors();
+            
+            // ランダムにゴールの位置を決める
+            Vector2Int _goalPosition = floorPositions[Random.Range(0, floorPositions.Count)];
+            
+            UpdateMap(_goalPosition.x, _goalPosition.y, MapTile.Goal);
+        }
+        
+        /// <summary>
+        /// アイテムの配置を決める
+        /// </summary>
+        private void PlaceItems(int itemCount)
+        {
+            // 要求数分アイテムを配置
+            for (int i = 0; i < itemCount; ++i)
+            {
+                PlaceItem();
+            }
+        }
+        
+        /// <summary>
+        /// アイテムを配置
+        /// </summary>
+        private void PlaceItem()
+        {
+            // 床の位置を全部集める
+            var floorPositions = CurrentMap.GetFloors();
+            
+            // ランダムにアイテムの位置を決める
+            Vector2Int _itemPosition = floorPositions[Random.Range(0, floorPositions.Count)];
+            
+            UpdateMap(_itemPosition.x, _itemPosition.y, MapTile.Treasure);
+        }
+        
+        /// <summary>
+        /// 敵の配置を決める
+        /// </summary>
+        /// <param name="enemyCount"></param>
+        private void PlaceEnemies(int enemyCount)
+        {
+            // 要求数分敵を配置
+            for (int i = 0; i < enemyCount; ++i)
+            {
+                PlaceEnemy();
+            }
+        }
+
+        private void PlaceEnemy()
+        {
+            // 床の位置を全部集める
+            var floorPositions = CurrentMap.GetFloors();
+            
+            // ランダムに敵の位置を決める
+            Vector2Int _enemyPosition = floorPositions[Random.Range(0, floorPositions.Count)];
+            
+            UpdateMap(_enemyPosition.x, _enemyPosition.y, MapTile.Enemy);
+        }
+
     }
 }

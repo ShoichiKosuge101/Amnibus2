@@ -19,6 +19,7 @@ namespace Dungeons
         // ObjectPool
         public ObjectPool floorPool;
         public ObjectPool wallPool;
+        public ObjectPool enemyPool;
         public ObjectPool item01Pool;
         
         private PlayerController _player;
@@ -79,6 +80,16 @@ namespace Dungeons
                         
                         // その上にプレイヤーを描画
                         SpawnPlayer(position);
+                    }
+                    if (mapTile == MapTile.Enemy)
+                    {
+                        // まず床を描画
+                        GameObject floorPrefab = floorPool.GetObject();
+                        floorPrefab.transform.position = position;
+                        
+                        // その上に敵を描画
+                        GameObject enemyPrefab = enemyPool.GetObject();
+                        enemyPrefab.transform.position = position;
                     }
                     if (mapTile == MapTile.Treasure)
                     {

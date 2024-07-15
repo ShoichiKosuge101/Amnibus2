@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Constants;
 using UnityEngine;
 
@@ -153,6 +154,29 @@ namespace Dungeons
                 }
                 Debug.Log(line);
             }
+        }
+        
+        /// <summary>
+        /// 床の位置を全部集める
+        /// </summary>
+        /// <returns></returns>
+        public List<Vector2Int> GetFloors()
+        {
+            List<Vector2Int> floorPositions = new List<Vector2Int>();
+
+            // 床の位置を全部集める
+            for (int x = 0; x < Width; ++x)
+            {
+                for (int y = 0; y < Height; ++y)
+                {
+                    if (Get(x, y).IsFloor)
+                    {
+                        floorPositions.Add(new Vector2Int(x, y));
+                    }
+                }
+            }
+
+            return floorPositions;
         }
     }
 }
