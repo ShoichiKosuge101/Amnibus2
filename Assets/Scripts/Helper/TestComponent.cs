@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using Dungeons;
+using UnityEngine;
 
 namespace Helper
 {
@@ -8,10 +9,14 @@ namespace Helper
     public class TestComponent
         : MonoBehaviour
     {
+        public MapDisplay mapDisplay;
+        
         public GameObject floorPrefab;
         public GameObject wallPrefab;
         public GameObject goalPrefab;
         public GameObject playerPrefab;
+        public GameObject enemyPrefab;
+        public GameObject item01Prefab;
         
         public int width = 20;
         public int height = 20;

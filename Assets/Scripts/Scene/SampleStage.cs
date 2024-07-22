@@ -24,6 +24,17 @@ namespace Scene
         private DungeonData dungeonData;
         
         /// <summary>
+        /// マップ描画クラス
+        /// </summary>
+        [SerializeField]
+        private MapDisplay mapDisplay;
+
+        /// <summary>
+        /// マップ管理クラス
+        /// </summary>
+        private IMapManager _mapManager;
+        
+        /// <summary>
         /// シーンのサービスを登録
         /// </summary>
         protected override void RegisterSceneServices()
@@ -49,13 +60,9 @@ namespace Scene
                 );
             
             // 最終的なマップ情報をマップ管理クラスに渡す
-            var mapManager = ServiceLocator.Instance.Resolve<IMapManager>();
-            // マップ管理クラスの初期化によってプレイヤー位置を確定
-            mapManager.Initialize(dgGenerator.GetLayer());
-            
-            // MapDisplayを取得
-            var mapDisplay = GetComponent<MapDisplay>();
-            mapDisplay.DisplayMap(mapManager);
+            _mapManager = ServiceLocator.Instance.Resolve<IMapManager>();
+            // マップ管理クラスの初期化によってプレイヤー位置やゴールの決定
+            _mapManager.Initialize(dgGenerator.GetLayer(), mapDisplay);
             
             // プレイヤーを取得
             var player = mapDisplay.GetPlayer();
@@ -65,7 +72,7 @@ namespace Scene
             cameraInitializer.SetupFollow(virtualCamera, player.gameObject);
             
             // イベント購読
-            SubscribeEvents(player, mapManager);
+            SubscribeEvents(player, _mapManager);
         }
 
         /// <summary>
@@ -94,6 +101,18 @@ namespace Scene
                 .Subscribe(_ =>
                 {
                     Debug.Log("Goal Reached!");
+                });
+            
+            // アイテム取得時の処理
+            mapManager
+                .OnItemPickedUpRx
+                .TakeUntilDestroy(this)
+                .Subscribe(_ =>
+                {
+                    Debug.Log("Item Get!");
+                    
+                    // // アイテムを取得したらアイテムを破棄
+                    // _mapManager.DiscardObj();
                 });
         }
     }

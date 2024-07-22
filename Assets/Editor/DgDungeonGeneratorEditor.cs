@@ -121,7 +121,7 @@ namespace Editor
             var dgMap2D = _dgGenerator.GetLayer();
             
             // マップ管理クラスに登録
-            _mapManager.Initialize(dgMap2D);
+            _mapManager.Initialize(dgMap2D, _testComponent.mapDisplay);
             // 最新のマップ情報を取得
             _layer2D = _mapManager.GetMap();
             
@@ -150,6 +150,14 @@ namespace Editor
                     else if (tile == MapTile.Player)
                     {
                         InstantiatePrefab(_testComponent.playerPrefab, position);
+                    }
+                    else if(tile == MapTile.Enemy)
+                    {
+                        InstantiatePrefab(_testComponent.enemyPrefab, position);
+                    }
+                    else if (tile == MapTile.Treasure)
+                    {
+                        InstantiatePrefab(_testComponent.item01Prefab, position);
                     }
                 }
             }

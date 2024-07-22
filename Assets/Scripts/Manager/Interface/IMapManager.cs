@@ -11,10 +11,12 @@ namespace Manager.Interface
         /// 初期化
         /// </summary>
         /// <param name="map"></param>
-        void Initialize(Layer2D map);
+        /// <param name="mapDisplay"></param>
+        void Initialize(Layer2D map, MapDisplay mapDisplay);
         
         Layer2D　CurrentMap { get; set; }
         Subject<Unit> OnGoalReachedRx { get; }
+        Subject<Vector2Int> OnItemPickedUpRx { get; }
         
         void SetMap(Layer2D map);
         Layer2D GetMap();
@@ -30,5 +32,6 @@ namespace Manager.Interface
 
         bool CanThrough(int x, int y);
 
+        void DiscardObj(Vector2Int position);
     }
 }

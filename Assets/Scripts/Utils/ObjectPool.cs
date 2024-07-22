@@ -16,11 +16,14 @@ namespace Utils
         /// プールからオブジェクトを取得
         /// </summary>
         /// <returns></returns>
-        public GameObject GetObject()
+        public GameObject GetObject(Transform target = null)
         {
+            // targetが存在する場合は上書き
+            var parent = target ?? transform;
+            
             if(_pool.Count == 0)
             {
-                return Instantiate(prefab);
+                return Instantiate(prefab, parent);
             }
             
             var obj = _pool.Dequeue();

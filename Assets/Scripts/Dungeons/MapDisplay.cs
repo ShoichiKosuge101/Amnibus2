@@ -12,6 +12,8 @@ namespace Dungeons
     public class MapDisplay
         : MonoBehaviour
     {
+        public Transform parent;
+        
         // Prefab
         public PlayerController playerPrefab;
         public GameObject goalPrefab;
@@ -30,7 +32,7 @@ namespace Dungeons
         /// <param name="position"></param>
         private void SpawnPlayer(in Vector2 position)
         {
-            _player = Instantiate(playerPrefab, position, Quaternion.identity);
+            _player = Instantiate(playerPrefab, position, Quaternion.identity, parent);
         }
         
         /// <summary>
@@ -58,24 +60,24 @@ namespace Dungeons
                     var mapTile = GetMapTile(layer2D, x, y);
                     if(mapTile == MapTile.Wall)
                     {
-                        GameObject wallPrefab = wallPool.GetObject();
+                        GameObject wallPrefab = wallPool.GetObject(parent);
                         wallPrefab.transform.position = position;
                         continue;
                     }
                     if(mapTile == MapTile.Floor)
                     {
-                        GameObject floorPrefab = floorPool.GetObject();
+                        GameObject floorPrefab = floorPool.GetObject(parent);
                         floorPrefab.transform.position = position;
                         continue;
                     }
                     if (mapTile == MapTile.Goal)
                     {
-                        Instantiate(goalPrefab, position, Quaternion.identity);
+                        Instantiate(goalPrefab, position, Quaternion.identity, parent);
                     }
                     if(mapTile == MapTile.Player)
                     {
                         // まず床を描画
-                        GameObject floorPrefab = floorPool.GetObject();
+                        GameObject floorPrefab = floorPool.GetObject(parent);
                         floorPrefab.transform.position = position;
                         
                         // その上にプレイヤーを描画
@@ -84,21 +86,21 @@ namespace Dungeons
                     if (mapTile == MapTile.Enemy)
                     {
                         // まず床を描画
-                        GameObject floorPrefab = floorPool.GetObject();
+                        GameObject floorPrefab = floorPool.GetObject(parent);
                         floorPrefab.transform.position = position;
                         
                         // その上に敵を描画
-                        GameObject enemyPrefab = enemyPool.GetObject();
+                        GameObject enemyPrefab = enemyPool.GetObject(parent);
                         enemyPrefab.transform.position = position;
                     }
                     if (mapTile == MapTile.Treasure)
                     {
                         // まず床を描画
-                        GameObject floorPrefab = floorPool.GetObject();
+                        GameObject floorPrefab = floorPool.GetObject(parent);
                         floorPrefab.transform.position = position;
                         
                         // その上にアイテムを描画
-                        GameObject item01Prefab = item01Pool.GetObject();
+                        GameObject item01Prefab = item01Pool.GetObject(parent);
                         item01Prefab.transform.position = position;
                     }
                 }
@@ -115,6 +117,31 @@ namespace Dungeons
         private static MapTile GetMapTile(Layer2D layer2D, int x, int y)
         {
             return layer2D.Get(x, y);
+        }
+        
+        /// <summary>
+        /// 指定のオブジェクトを返却
+        /// </summary>
+        /// <param name="obj"></param>
+        public void ReleaseObject(GameObject obj)
+        {
+            // オブジェクトを非表示にしてプールに返却
+            obj.SetActive(false);
+            switch (obj.tag)
+            {
+                case "Floor":
+                    floorPool.ReleaseObject(obj);
+                    break;
+                case "Wall":
+                    wallPool.ReleaseObject(obj);
+                    break;
+                case "Enemy":
+                    enemyPool.ReleaseObject(obj);
+                    break;
+                case "Item01":
+                    item01Pool.ReleaseObject(obj);
+                    break;
+            }
         }
     }
 }

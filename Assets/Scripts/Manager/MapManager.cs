@@ -14,16 +14,20 @@ namespace Manager
         : IMapManager
     {
         public Layer2D CurrentMap { get; set; } = new(0, 0);
+        private MapDisplay _mapDisplay;
         
         public Subject<Unit> OnGoalReachedRx { get; } = new();
+        public Subject<Vector2Int> OnItemPickedUpRx { get; } = new();
 
         /// <summary>
         /// 初期化
         /// </summary>
         /// <param name="map"></param>
-        public void Initialize(Layer2D map)
+        /// <param name="mapDisplay"></param>
+        public void Initialize(Layer2D map, MapDisplay mapDisplay)
         {
             CurrentMap = map;
+            _mapDisplay = mapDisplay;
             
             // ゴールを配置
             PlaceGoal();
@@ -38,6 +42,9 @@ namespace Manager
             var playerPosition = GetSpawnPlayerPosition();
             // プレイヤーの座標を登録
             UpdateMap((int)playerPosition.x, (int)playerPosition.y, MapTile.Player);
+            
+            // 初期マップの表示
+            _mapDisplay.DisplayMap(this);
         }
 
         public void SetMap(Layer2D map)
@@ -68,6 +75,12 @@ namespace Manager
             if (CurrentMap.Get(afterPosition.x, afterPosition.y).IsGoal)
             {
                 OnGoalReachedRx.OnNext(Unit.Default);
+            }
+            
+            // アイテムを拾ったかどうか
+            if (CurrentMap.Get(afterPosition.x, afterPosition.y).IsTreasure)
+            {
+                OnItemPickedUpRx.OnNext(afterPosition);
             }
             
             // TODO: プレイヤーフラグを渡すが正しい
@@ -112,7 +125,6 @@ namespace Manager
         {
             return GetRandomFloor();
         }
-        
         
         /// <summary>
         /// ゴールを配置
@@ -167,6 +179,9 @@ namespace Manager
             }
         }
 
+        /// <summary>
+        /// 敵を配置
+        /// </summary>
         private void PlaceEnemy()
         {
             // 床の位置を全部集める
@@ -178,5 +193,30 @@ namespace Manager
             UpdateMap(_enemyPosition.x, _enemyPosition.y, MapTile.Enemy);
         }
 
+        /// <summary>
+        /// 対象オブジェクトの破棄
+        /// </summary>
+        /// <param name="position"></param>
+        public void DiscardObj(Vector2Int position)
+        {
+            // TODO: ここでオブジェクト取得したい
+            // // オブジェクトを取得
+            // var obj = _mapDisplay.GetObject(position);
+            
+            // 対象をマップから削除
+            UpdateMap(position.x, position.y, MapTile.Floor);
+            
+            // // オブジェクトを解放
+            // _mapDisplay.ReleaseObject(obj);
+        }
+        
+        /// <summary>
+        /// 購読解除
+        /// </summary>
+        public void Dispose()
+        {
+            OnGoalReachedRx.Dispose();
+            OnItemPickedUpRx.Dispose();
+        }
     }
 }
