@@ -82,6 +82,26 @@ namespace Dungeons
             }
         }
         
+        // 値の上書き
+        public void RideOn(in int x, in int y, in MapTile value)
+        {
+            if (!IsOutOfRange(x, y))
+            {
+                // 値の上書き
+                _values[x, y] = _values[x, y].Add(value.Properties);
+            }
+        }
+        
+        // 値の削除
+        public void Remove(in int x, in int y, in MapTile value)
+        {
+            if (!IsOutOfRange(x, y))
+            {
+                // 値の削除
+                _values[x, y] = _values[x, y].Remove(value.Properties);
+            }
+        }
+        
         /// <summary>
         /// 特定の値で埋める
         /// </summary>

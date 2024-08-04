@@ -1,4 +1,6 @@
-﻿using Constants;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Constants;
 using Controller;
 using Manager.Interface;
 using UnityEngine;
@@ -26,6 +28,10 @@ namespace Dungeons
         
         private PlayerController _player;
         
+        private Dictionary<Vector2, List<GameObject>> objectsAtPositions = new ();
+
+        private IMapManager _mapManager;
+        
         /// <summary>
         /// プレイヤーの生成
         /// </summary>
@@ -49,6 +55,9 @@ namespace Dungeons
         /// </summary>
         public void DisplayMap(IMapManager mapManager)
         {
+            // TODO: 一旦ここで変数に格納
+            _mapManager = mapManager;
+            
             var layer2D = mapManager.GetMap();
 
             for (int y = 0; y < layer2D.Height; y++)
@@ -56,29 +65,42 @@ namespace Dungeons
                 for (int x = 0; x < layer2D.Width; x++)
                 {
                     Vector2 position = new Vector2(x, y);
+                    var objectsAtPosition = new List<GameObject>();
                     
                     var mapTile = GetMapTile(layer2D, x, y);
                     if(mapTile == MapTile.Wall)
                     {
                         GameObject wallPrefab = wallPool.GetObject(parent);
                         wallPrefab.transform.position = position;
+                        // 登録
+                        objectsAtPosition.Add(wallPrefab);
+                        
                         continue;
                     }
                     if(mapTile == MapTile.Floor)
                     {
                         GameObject floorPrefab = floorPool.GetObject(parent);
                         floorPrefab.transform.position = position;
+                        // 登録
+                        objectsAtPosition.Add(floorPrefab);
+                        
                         continue;
                     }
                     if (mapTile == MapTile.Goal)
                     {
                         Instantiate(goalPrefab, position, Quaternion.identity, parent);
+                        // 登録
+                        objectsAtPosition.Add(goalPrefab);
+                        
+                        continue;
                     }
                     if(mapTile == MapTile.Player)
                     {
                         // まず床を描画
                         GameObject floorPrefab = floorPool.GetObject(parent);
                         floorPrefab.transform.position = position;
+                        // 登録
+                        objectsAtPosition.Add(floorPrefab);
                         
                         // その上にプレイヤーを描画
                         SpawnPlayer(position);
@@ -88,21 +110,32 @@ namespace Dungeons
                         // まず床を描画
                         GameObject floorPrefab = floorPool.GetObject(parent);
                         floorPrefab.transform.position = position;
+                        // 登録
+                        objectsAtPosition.Add(floorPrefab);
                         
                         // その上に敵を描画
                         GameObject enemyPrefab = enemyPool.GetObject(parent);
                         enemyPrefab.transform.position = position;
+                        // 登録
+                        objectsAtPosition.Add(enemyPrefab);
                     }
                     if (mapTile == MapTile.Treasure)
                     {
                         // まず床を描画
                         GameObject floorPrefab = floorPool.GetObject(parent);
                         floorPrefab.transform.position = position;
+                        // 登録
+                        objectsAtPosition.Add(floorPrefab);
                         
                         // その上にアイテムを描画
                         GameObject item01Prefab = item01Pool.GetObject(parent);
                         item01Prefab.transform.position = position;
+                        // 登録
+                        objectsAtPosition.Add(item01Prefab);
                     }
+                    
+                    // 登録
+                    objectsAtPositions[position] = objectsAtPosition;
                 }
             }
         }
@@ -118,29 +151,58 @@ namespace Dungeons
         {
             return layer2D.Get(x, y);
         }
-        
+
         /// <summary>
         /// 指定のオブジェクトを返却
         /// </summary>
-        /// <param name="obj"></param>
-        public void ReleaseObject(GameObject obj)
+        /// <param name="position"></param>
+        /// <param name="mapTile"></param>
+        public void ReleaseObject(Vector2 position, MapTile mapTile)
         {
-            // オブジェクトを非表示にしてプールに返却
-            obj.SetActive(false);
-            switch (obj.tag)
+            var currentTile = GetMapTile(_mapManager.CurrentMap, (int)position.x, (int)position.y);
+            Debug.Log($"ReleaseObject: {currentTile}");
+            
+            // 登録されているオブジェクトを削除
+            if (objectsAtPositions.TryGetValue(position, out var objAtPosition))
             {
-                case "Floor":
-                    floorPool.ReleaseObject(obj);
-                    break;
-                case "Wall":
-                    wallPool.ReleaseObject(obj);
-                    break;
-                case "Enemy":
-                    enemyPool.ReleaseObject(obj);
-                    break;
-                case "Item01":
-                    item01Pool.ReleaseObject(obj);
-                    break;
+                // 指定のタグを持つオブジェクトを検索
+                var obj = objAtPosition.FirstOrDefault(obj => obj.CompareTag(mapTile.GetTag()));
+                if (obj != null)
+                {
+                    // プールに返却
+                    ReturnObjectToPool(obj);
+                    
+                    // 登録から削除
+                    objAtPosition.Remove(obj);
+                }
+                
+                // 登録を更新
+                objectsAtPositions[position] = objAtPosition;
+            }
+        }
+
+        /// <summary>
+        /// オブジェクトをプールに返却
+        /// </summary>
+        /// <param name="obj"></param>
+        private void ReturnObjectToPool(GameObject obj)
+        {
+            // タグによってプールを切り替え
+            if (obj.CompareTag(MapTile.Wall.GetTag()))
+            {
+                wallPool.ReleaseObject(obj);
+            }
+            if (obj.CompareTag(MapTile.Floor.GetTag()))
+            {
+                floorPool.ReleaseObject(obj);
+            }
+            if (obj.CompareTag(MapTile.Enemy.GetTag()))
+            {
+                enemyPool.ReleaseObject(obj);
+            }
+            if (obj.CompareTag(MapTile.Treasure.GetTag()))
+            {
+                item01Pool.ReleaseObject(obj);
             }
         }
     }

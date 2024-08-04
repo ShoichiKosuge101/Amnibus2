@@ -32,6 +32,10 @@ namespace Manager.Interface
 
         bool CanThrough(int x, int y);
 
-        void DiscardObj(Vector2Int position);
+        void DiscardObj(Vector2Int position, MapTile mapTile);
+        
+        void RideOnObj(Vector2Int position, MapTile mapTile);
+        
+        void RemoveObj(Vector2Int position, MapTile mapTile);
     }
 }

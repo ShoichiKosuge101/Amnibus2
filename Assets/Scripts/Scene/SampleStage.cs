@@ -1,4 +1,5 @@
-﻿using Controller;
+﻿using Constants;
+using Controller;
 using Dungeons;
 using Dungeons.Factory;
 using Manager;
@@ -107,12 +108,15 @@ namespace Scene
             mapManager
                 .OnItemPickedUpRx
                 .TakeUntilDestroy(this)
-                .Subscribe(_ =>
+                .Subscribe(pos =>
                 {
                     Debug.Log("Item Get!");
+
+                    // オブジェクトを破棄
+                    mapDisplay.ReleaseObject(pos, MapTile.Treasure);
                     
-                    // // アイテムを取得したらアイテムを破棄
-                    // _mapManager.DiscardObj();
+                    // アイテムを取得したらマップからアイテムを破棄
+                    _mapManager.DiscardObj(pos, MapTile.Treasure);
                 });
         }
     }

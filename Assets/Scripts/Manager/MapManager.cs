@@ -61,6 +61,16 @@ namespace Manager
             CurrentMap.Set(x, y, tile);
         }
 
+        public void RideOnObj(Vector2Int position, MapTile mapTile)
+        {
+            CurrentMap.RideOn(position.x, position.y, mapTile);
+        }
+        
+        public void RemoveObj(Vector2Int position, MapTile mapTile)
+        {
+            CurrentMap.Remove(position.x, position.y, mapTile);
+        }
+
         /// <summary>
         /// プレイヤーの座標を更新
         /// </summary>
@@ -75,16 +85,24 @@ namespace Manager
             if (CurrentMap.Get(afterPosition.x, afterPosition.y).IsGoal)
             {
                 OnGoalReachedRx.OnNext(Unit.Default);
+                
+                // 一時的な上書き
+                RideOnObj(afterPosition, MapTile.Player);
+                
+                return;
             }
             
             // アイテムを拾ったかどうか
             if (CurrentMap.Get(afterPosition.x, afterPosition.y).IsTreasure)
             {
+                // 一時的な上書き
+                RideOnObj(afterPosition, MapTile.Player);
                 OnItemPickedUpRx.OnNext(afterPosition);
+                
+                return;
             }
             
-            // TODO: プレイヤーフラグを渡すが正しい
-            // 移動後の座標をプレイヤーにする
+            // 移動後の座標にプレイヤーを上書き
             UpdateMap(afterPosition.x, afterPosition.y, MapTile.Player);
         }
         
@@ -114,7 +132,9 @@ namespace Manager
         /// <returns></returns>
         public bool CanThrough(int x, int y)
         {
-            return !CurrentMap.Get(x, y).IsWall;
+            // 床でも敵でもない場合は通行可能
+            return !CurrentMap.Get(x, y).IsWall
+                && !CurrentMap.Get(x, y).IsEnemy;
         }
 
         /// <summary>
@@ -162,7 +182,8 @@ namespace Manager
             
             // ランダムにアイテムの位置を決める
             Vector2Int _itemPosition = floorPositions[Random.Range(0, floorPositions.Count)];
-            
+
+            // 床のプロパティにアイテムを載せる
             UpdateMap(_itemPosition.x, _itemPosition.y, MapTile.Treasure);
         }
         
@@ -197,17 +218,11 @@ namespace Manager
         /// 対象オブジェクトの破棄
         /// </summary>
         /// <param name="position"></param>
-        public void DiscardObj(Vector2Int position)
+        /// <param name="mapTile"></param>
+        public void DiscardObj(Vector2Int position, MapTile mapTile)
         {
-            // TODO: ここでオブジェクト取得したい
-            // // オブジェクトを取得
-            // var obj = _mapDisplay.GetObject(position);
-            
             // 対象をマップから削除
-            UpdateMap(position.x, position.y, MapTile.Floor);
-            
-            // // オブジェクトを解放
-            // _mapDisplay.ReleaseObject(obj);
+            RemoveObj(position, mapTile);
         }
         
         /// <summary>

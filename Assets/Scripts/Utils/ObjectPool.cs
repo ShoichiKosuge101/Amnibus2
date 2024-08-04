@@ -13,13 +13,19 @@ namespace Utils
         private readonly Queue<GameObject> _pool = new Queue<GameObject>();
         
         /// <summary>
+        /// プールの親オブジェクト
+        /// </summary>
+        [SerializeField]
+        private Transform poolParent;
+        
+        /// <summary>
         /// プールからオブジェクトを取得
         /// </summary>
         /// <returns></returns>
         public GameObject GetObject(Transform target = null)
         {
             // targetが存在する場合は上書き
-            var parent = target ?? transform;
+            var parent = target ?? poolParent;
             
             if(_pool.Count == 0)
             {
@@ -38,7 +44,9 @@ namespace Utils
         public void ReleaseObject(GameObject obj)
         {
             obj.SetActive(false);
+            obj.transform.SetParent(poolParent);
             _pool.Enqueue(obj);
         }
+
     }
 }
