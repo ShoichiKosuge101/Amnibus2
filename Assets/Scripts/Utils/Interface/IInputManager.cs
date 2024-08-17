@@ -5,6 +5,7 @@ namespace Utils.Interface
 {
     public interface IInputManager
     {
+        IObservable<long> DecideObservable { get; }
         IObservable<Vector2> InputObservable { get; }
     }
 }

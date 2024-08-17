@@ -11,7 +11,13 @@ namespace Utils
     public class InputManager
         : IInputManager
     {
-        // 入力を監視するObservable
+        public IObservable<long> DecideObservable => Observable
+            .EveryUpdate()
+            .Where(_ => Input.GetButtonDown("Fire1"));
+        
+        /// <summary>
+        /// 入力を監視するObservable
+        /// </summary>
         public IObservable<Vector2> InputObservable => Observable
             .EveryUpdate()
             .Select(_ =>

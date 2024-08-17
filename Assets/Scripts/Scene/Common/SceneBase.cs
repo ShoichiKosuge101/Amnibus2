@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Scene.Common
 {
@@ -40,6 +41,34 @@ namespace Scene.Common
         protected virtual void RegisterSceneServices()
         {
             // シーンごとのサービス登録処理を記述
+        }
+        
+        /// <summary>
+        /// シーンを読み込む
+        /// </summary>
+        /// <param name="sceneName"></param>
+        protected virtual void LoadTargetScene(string sceneName)
+        {
+            // シーン遷移処理を記述
+            SceneManager.LoadScene(sceneName);
+        }
+
+        /// <summary>
+        /// 共通シーンのロード
+        /// </summary>
+        public void LoadCommonScene()
+        {
+            // 共通シーンのロード
+            SceneManager.LoadScene("CommonScene");
+        }
+
+        /// <summary>
+        /// タイトルシーンのロード
+        /// </summary>
+        public void LoadTitleScene()
+        {
+            // タイトルシーンのロード
+            SceneManager.LoadScene("Title");
         }
     }
 }

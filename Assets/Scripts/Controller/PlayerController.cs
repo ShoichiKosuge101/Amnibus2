@@ -74,18 +74,31 @@ namespace Controller
             // 移動先の座標を計算
             Vector3 targetPosition = transform.position + direction;
 
-            // 移動先に到達するまでループ
-            while (transform.position != targetPosition)
+            try
             {
-                transform.position = Vector3
-                    .MoveTowards(
-                        transform.position, 
-                        targetPosition, 
-                        Time.deltaTime * speed
-                    );
+                // 移動先に到達するまでループ
+                while (
+                    transform != null 
+                    && transform.position != targetPosition)
+                {
+                    // キャンセルされたら処理を終了
+                    token.ThrowIfCancellationRequested();
                 
-                // 1フレーム待機
-                await UniTask.Yield(PlayerLoopTiming.Update, token);
+                    transform.position = Vector3
+                        .MoveTowards(
+                            transform.position, 
+                            targetPosition, 
+                            Time.deltaTime * speed
+                        );
+                
+                    // 1フレーム待機
+                    await UniTask.Yield(PlayerLoopTiming.Update, token);
+                }                
+            }
+            catch (OperationCanceledException)
+            {
+                // キャンセルされたら処理を終了
+                return;
             }
             
             // 移動中フラグを下げる

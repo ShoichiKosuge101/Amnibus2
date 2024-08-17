@@ -102,6 +102,8 @@ namespace Scene
                 .Subscribe(_ =>
                 {
                     Debug.Log("Goal Reached!");
+                    
+                    LoadTargetScene("Title");
                 });
             
             // アイテム取得時の処理
