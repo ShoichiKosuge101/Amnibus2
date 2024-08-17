@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -20,16 +20,19 @@ namespace Test
         // 推定コスト
         public float Heuristic { get; set; }
         
-        // 合計コスト
-        public float Total { get; set; }
-        
         // 親の座標
         public Vector3 Parent { get; set; }
         
         // 開いているか
         public bool IsOpen { get; set; }
+        
+        // 合計コスト
+        public float Total => Cost + Heuristic;
     }
     
+    /// <summary>
+    /// A*探索
+    /// </summary>
     public class AStarPath
         : MonoBehaviour
     {
@@ -37,13 +40,22 @@ namespace Test
         public TileBase ReplaceTile;
         public GameObject Player;
         public GameObject Enemy;
-        private List<CellInfo> CellInfos = new();
-        private Vector3 GoalPosition;
-        private bool ExitFlg;
+        private List<CellInfo> _cellInfos = new();
+        private Vector3 _goalPosition;
+        private bool _exitFlg;
 
         private void Start()
         {
-            CellInfos = new List<CellInfo>();
+            // 初期化
+            InitializeAsync().Forget();
+        }
+
+        /// <summary>
+        /// 初期化
+        /// </summary>
+        private async UniTask InitializeAsync()
+        {
+            _cellInfos = new List<CellInfo>();
             
             // A*探索
             AStarSearchPathFinding();
@@ -52,31 +64,30 @@ namespace Test
         /// <summary>
         /// A*探索
         /// </summary>
-        public void AStarSearchPathFinding()
+        private void AStarSearchPathFinding()
         {
             // ゴールはプレイヤーの位置
-            GoalPosition = Player.transform.position;
+            _goalPosition = Player.transform.position;
             
             // スタート地点を設定
             var startCell = new CellInfo
             {
                 Position = Enemy.transform.position,
                 Cost = 0,
-                Heuristic = Vector2.Distance(Enemy.transform.position, GoalPosition),
-                Total = Vector2.Distance(Enemy.transform.position, GoalPosition),
+                Heuristic = Vector2.Distance(Enemy.transform.position, _goalPosition),
                 Parent = Vector3.negativeInfinity, // 親がないので無限大
                 IsOpen = true
             };
             
-            CellInfos.Add(startCell);
+            _cellInfos.Add(startCell);
             
-            ExitFlg = false;
+            _exitFlg = false;
             
             // ゴールに到達するまで繰り返す
-            while (CellInfos.Any(x => x.IsOpen) && !ExitFlg)
+            while (_cellInfos.Any(x => x.IsOpen) && !_exitFlg)
             {
                 // 最小コストのセルを取得
-                var minCell = CellInfos
+                var minCell = _cellInfos
                     .Where(x => x.IsOpen)
                     .OrderBy(x => x.Total)
                     .First();
@@ -98,68 +109,104 @@ namespace Test
             // Vector3Int変換
             var centerPosition = Map.WorldToCell(center.Position);
             
-            // 上下左右のマスをforで表現
-            for (int i = -1; i < 2; ++i)
+            // 上下左右のオフセットを定義
+            Vector3Int[] offsets = new[]
             {
-                for (int j = -1; j < 2; ++j)
+                new Vector3Int(0, 1, 0), // 上
+                new Vector3Int(0, -1, 0), // 下
+                new Vector3Int(1, 0, 0), // 右
+                new Vector3Int(-1, 0, 0), // 左
+            };
+
+            foreach (var direction in offsets)
+            {
+                // 配置を取得
+                var position = centerPosition + direction;
+                // タイルを取得
+                var tile = Map.GetTile(position);
+                        
+                // タイルがない場合はスキップ
+                if (tile == null)
                 {
-                    // 上下左右のみ可とする
-                    if (((i == 0 || j != 0) && (i != 0 || j == 0))
-                        || i == 0 && j == 0)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
                     
-                    // 配置を取得
-                    var position = centerPosition + new Vector3Int(i, j, 0);
-                    // タイルを取得
-                    var tile = Map.GetTile(position);
-                        
-                    // タイルがない場合はスキップ
-                    if (tile == null)
-                    {
-                        continue;
-                    }
-                        
-                    // セル情報を取得
-                    var cell = CellInfos
-                        .FirstOrDefault(x => x.Position == Map.CellToWorld(position));
+                // セル情報を取得
+                var cell = _cellInfos
+                    .FirstOrDefault(x => x.Position == Map.CellToWorld(position));
                     
-                    // セル情報がある場合はスキップ
-                    if (cell != null)
-                    {
-                        continue;
-                    }
-                    
-                    // セル情報がない場合は新規作成
-                    cell = new CellInfo
-                    {
-                        Position = Map.CellToWorld(position),
-                        Cost = center.Cost + 1,
-                        Heuristic = Vector2.Distance(Map.CellToWorld(position), GoalPosition),
-                        Total = center.Cost + 1 + Vector2.Distance(Map.CellToWorld(position), GoalPosition),
-                        Parent = center.Position,
-                        IsOpen = true
-                    };
-                    CellInfos.Add(cell);
+                // セル情報がある場合はスキップ
+                if (cell != null)
+                {
+                    continue;
+                }
+
+                // セル情報がない場合は新規作成
+                // 壁判定を併せて行う
+                cell = CreateCellInfo(tile, Map.CellToWorld(position), center);
+                _cellInfos.Add(cell);
                             
-                    // ゴールに到達した場合は終了処理
-                    if (Map.WorldToCell(position) == Map.WorldToCell(GoalPosition))
+                // ゴールに到達した場合は終了処理
+                if (Map.WorldToCell(position) == Map.WorldToCell(_goalPosition))
+                {
+                    // タイルを置き換え
+                    CellInfo preCell = cell;
+                    while (preCell != null && preCell.Parent != Vector3.negativeInfinity)
                     {
-                        // タイルを置き換え
-                        CellInfo preCell = cell;
-                        while (preCell != null && preCell.Parent != Vector3.negativeInfinity)
-                        {
-                            Map.SetTile(Map.WorldToCell(preCell.Position), ReplaceTile);
-                            preCell = CellInfos.FirstOrDefault(x => x.Position == preCell.Parent);
-                        }
-                                
-                        // ゴールに到達したので終了
-                        ExitFlg = true;
-                        return;
+                        Map.SetTile(Map.WorldToCell(preCell.Position), ReplaceTile);
+                        preCell = _cellInfos.FirstOrDefault(x => x.Position == preCell.Parent);
                     }
+
+                    // ゴールに到達したので終了
+                    _exitFlg = true;
+                    return;
                 }
             }
+        }
+        
+        /// <summary>
+        /// セル情報を作成
+        /// </summary>
+        /// <param name="tileBase"></param>
+        /// <param name="position"></param>
+        /// <param name="center"></param>
+        /// <returns></returns>
+        private CellInfo CreateCellInfo(TileBase tileBase, Vector3 position, CellInfo center)
+        {
+            const int WALL_COST = 999;
+            const int PASSAGE_COST = 1;
+            
+            var tile = tileBase as Tile;
+            if (IsWall(tile))
+            {
+                return new CellInfo
+                {
+                    Position = position,
+                    Cost = center.Cost + WALL_COST,
+                    Heuristic = Vector2.Distance(position, _goalPosition),
+                    Parent = center.Position,
+                    IsOpen = true
+                };
+            }
+            
+            return new CellInfo
+            {
+                Position = position,
+                Cost = center.Cost + PASSAGE_COST,
+                Heuristic = Vector2.Distance(position, _goalPosition),
+                Parent = center.Position,
+                IsOpen = true
+            };
+        }
+        
+        /// <summary>
+        /// 壁判定
+        /// </summary>
+        /// <param name="tile"></param>
+        /// <returns></returns>
+        bool IsWall(Tile tile)
+        {
+            return tile != null && tile.sprite.name.Contains("Wall");
         }
     }
 }
