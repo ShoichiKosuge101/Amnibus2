@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -47,13 +46,13 @@ namespace Test
         private void Start()
         {
             // 初期化
-            InitializeAsync().Forget();
+            Initialize();
         }
 
         /// <summary>
         /// 初期化
         /// </summary>
-        private async UniTask InitializeAsync()
+        private void Initialize()
         {
             _cellInfos = new List<CellInfo>();
             
@@ -150,17 +149,32 @@ namespace Test
                 if (Map.WorldToCell(position) == Map.WorldToCell(_goalPosition))
                 {
                     // タイルを置き換え
-                    CellInfo preCell = cell;
-                    while (preCell != null && preCell.Parent != Vector3.negativeInfinity)
-                    {
-                        Map.SetTile(Map.WorldToCell(preCell.Position), ReplaceTile);
-                        preCell = _cellInfos.FirstOrDefault(x => x.Position == preCell.Parent);
-                    }
+                    ReplaceTiles(cell);
 
                     // ゴールに到達したので終了
                     _exitFlg = true;
                     return;
                 }
+            }
+        }
+
+        /// <summary>
+        /// セル情報を塗り替えていく
+        /// </summary>
+        /// <param name="initialCell"></param>
+        private void ReplaceTiles(CellInfo initialCell)
+        {
+            // タイルを置き換え
+            CellInfo preCell = initialCell;
+            
+            // ゴールからスタートまでの経路を取得
+            while (preCell != null && preCell.Parent != Vector3.negativeInfinity)
+            {
+                // タイルを置き換え
+                Map.SetTile(Map.WorldToCell(preCell.Position), ReplaceTile);
+                
+                // 親を取得
+                preCell = _cellInfos.FirstOrDefault(x => x.Position == preCell.Parent);
             }
         }
         
