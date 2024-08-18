@@ -1,10 +1,14 @@
 ﻿using System.Threading;
 using UniRx;
+using UnityEngine;
 using Utils;
 using Utils.Interface;
 
 namespace Controller.Logic.State
 {
+    /// <summary>
+    /// プレイヤーの入力State
+    /// </summary>
     public class PlayerInputState
         : StateBase
     {
@@ -28,10 +32,14 @@ namespace Controller.Logic.State
             // トークンを生成
             _tokenSource = new CancellationTokenSource();
             
+            // Playerの現在位置を取得
+            var transform = Owner.MapManager.PlayerController.transform;
+            
             // キー入力を取得
             // 入力を監視
             _inputManager
                 .InputObservable
+                .Where(_ => Owner.CurrentState == this && transform != null)
                 .Subscribe(input =>
                 {
                     // トークンをキャンセル
@@ -39,34 +47,33 @@ namespace Controller.Logic.State
                     // トークンを再生成
                     _tokenSource = new CancellationTokenSource();
                     
+                    // 移動先の座標を計算
+                    Vector3 targetPosition = transform.position + new Vector3(input.x, input.y, 0);
+                    
+                    // 通行可能でなければ移動しない
+                    if(!Owner.MapManager.CanThrough((int)targetPosition.x, (int)targetPosition.y))
+                    {
+                        // ターンは消費しない
+                        return;
+                    }
+
                     // 入力をプレイヤーに渡す
                     Owner.MapManager.PlayerController.SetNextPosition(input);
                     
                     // 移動Stateに遷移
                     Owner.ChangeState(Owner.PlayerMoveState);
-                    
-                    // // 移動先の座標を計算
-                    // Vector3 targetPosition = transform.position + new Vector3(input.x, input.y, 0);
-                    //
-                    // // 通行可能でなければ移動しない
-                    // if(!mapManager.CanThrough((int)targetPosition.x, (int)targetPosition.y))
-                    // {
-                    //     return;
-                    // }
-                    //
-                    // // 移動処理
-                    // MoveAsync(new Vector3(input.x, input.y, 0), _tokenSource.Token).Forget();
                 })
                 .AddTo(_disposable);
         }
         
         public override void OnUpdate()
         {
-            // 入力購読
+            // 入力が取れなければ終了
             if (_inputManager == null)
             {
+                Debug.LogError("InputManager is null.");
+                
                 OnExit();
-                return;
             }
         }
         

@@ -85,14 +85,6 @@ namespace Controller.Logic
                 })
                 .AddTo(_disposable);
         }
-        
-        /// <summary>
-        /// デストラクタ
-        /// </summary>
-        ~StateManager()
-        {
-            _disposable.Dispose();
-        }
 
         /// <summary>
         /// イベント購読
@@ -167,12 +159,25 @@ namespace Controller.Logic
             }
         }
         
+        /// <summary>
+        /// シーン変更
+        /// </summary>
+        /// <param name="sceneName"></param>
         public void ChangeScene(string sceneName)
         {
             _onChangeSceneRx.OnNext(sceneName);
             
             // 終了処理
+            Exit();
+        }
+        
+        /// <summary>
+        /// 終了処理
+        /// </summary>
+        private void Exit()
+        {
             CurrentState = null;
+            _disposable.Dispose();
         }
     }
 }
