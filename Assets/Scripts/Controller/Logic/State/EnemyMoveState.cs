@@ -11,8 +11,8 @@
         {
             // TODO: 敵の移動処理
             
-            // 移動終了後、プレイヤーの入力Stateに遷移
-            Owner.ChangeState(Owner.PlayerInputState);
+            // 移動終了後、ターン終了Stateに遷移
+            Owner.ChangeState(Owner.TurnEndState);
         }
     }
 }

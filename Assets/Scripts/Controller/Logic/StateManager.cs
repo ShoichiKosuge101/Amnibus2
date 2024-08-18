@@ -29,6 +29,11 @@ namespace Controller.Logic
         public StateBase CurrentState { get; private set; }
         
         /// <summary>
+        /// ゴールに到達したかどうか
+        /// </summary>
+        public bool IsGoalReached { get; private set; }
+        
+        /// <summary>
         /// Map管理クラス
         /// </summary>
         public readonly IMapManager _mapManager;
@@ -116,7 +121,7 @@ namespace Controller.Logic
                 {
                     Debug.Log("Goal Reached!");
                     
-                    _onChangeSceneRx.OnNext("Title");
+                    IsGoalReached = true;
                 })
                 .AddTo(_disposable);
             
@@ -160,6 +165,14 @@ namespace Controller.Logic
             {
                 CurrentState.OnUpdate();
             }
+        }
+        
+        public void ChangeScene(string sceneName)
+        {
+            _onChangeSceneRx.OnNext(sceneName);
+            
+            // 終了処理
+            CurrentState = null;
         }
     }
 }
