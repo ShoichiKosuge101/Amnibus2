@@ -19,6 +19,7 @@ namespace Manager.Interface
         Subject<Unit> OnGoalReachedRx { get; }
         Subject<Vector2Int> OnItemPickedUpRx { get; }
         PlayerController PlayerController { get; }
+        EnemyManager EnemyManager { get; }
         
         void SetMap(Layer2D map);
         Layer2D GetMap();

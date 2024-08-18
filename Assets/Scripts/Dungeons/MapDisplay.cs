@@ -51,6 +51,19 @@ namespace Dungeons
         }
         
         /// <summary>
+        /// 敵を取得
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<EnemyController> GetEnemies()
+        {
+            return objectsAtPositions.Values
+                .SelectMany(objs => 
+                    objs.Where(obj => obj.GetComponent<EnemyController>() != null)
+                    .Select(obj => obj.GetComponent<EnemyController>())
+                    );
+        }
+        
+        /// <summary>
         /// マップを表示
         /// </summary>
         public void DisplayMap(IMapManager mapManager)

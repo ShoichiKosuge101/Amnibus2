@@ -32,13 +32,12 @@ namespace Controller.Logic
         /// ゴールに到達したかどうか
         /// </summary>
         public bool IsGoalReached { get; private set; }
-        
+
         /// <summary>
         /// Map管理クラス
         /// </summary>
-        public readonly IMapManager _mapManager;
-        public IMapManager MapManager => _mapManager;
-        
+        public IMapManager MapManager { get; }
+
         /// <summary>
         /// 購読管理
         /// </summary>
@@ -60,9 +59,16 @@ namespace Controller.Logic
             )
         {
             // 最終的なマップ情報をマップ管理クラスに渡す
-            _mapManager = ServiceLocator.Instance.Resolve<IMapManager>();
+            MapManager = ServiceLocator.Instance.Resolve<IMapManager>();
 
-            SetUpState = new SetUpState(this, dungeonData, _mapManager, mapDisplay, virtualCamera);
+            // ダンジョン生成に必要なものを渡す
+            SetUpState = new SetUpState(
+                this, 
+                dungeonData, 
+                MapManager, 
+                mapDisplay, 
+                virtualCamera);
+            
             PlayerInputState = new PlayerInputState(this);
             PlayerMoveState = new PlayerMoveState(this);
             PlayerAttackState = new PlayerAttackState(this);
@@ -74,7 +80,7 @@ namespace Controller.Logic
             ChangeState(SetUpState);
             
             // イベント購読
-            SubscribeEvents(_mapManager, mapDisplay);
+            SubscribeEvents(MapManager, mapDisplay);
             
             // 毎フレーム更新
             Observable
@@ -128,7 +134,7 @@ namespace Controller.Logic
                     mapDisplay.ReleaseObject(pos, MapTile.Treasure);
                     
                     // アイテムを取得したらマップからアイテムを破棄
-                    _mapManager.DiscardObj(pos, MapTile.Treasure);
+                    MapManager.DiscardObj(pos, MapTile.Treasure);
                 })
                 .AddTo(_disposable);
         }

@@ -18,6 +18,7 @@ namespace Manager
         private MapDisplay _mapDisplay;
 
         public PlayerController PlayerController { get; private set; }
+        public EnemyManager EnemyManager { get; } = new();
 
         public Subject<Unit> OnGoalReachedRx { get; } = new();
         public Subject<Vector2Int> OnItemPickedUpRx { get; } = new();
@@ -48,6 +49,14 @@ namespace Manager
             
             // 初期マップの表示
             _mapDisplay.DisplayMap(this);
+            
+            // 敵を取得
+            var enemyControllers = _mapDisplay.GetEnemies();
+            // 敵を保持
+            foreach (var enemyController in enemyControllers)
+            {
+                EnemyManager.AddEnemy(enemyController);
+            }
             
             // プレイヤー本体を取得
             var player = _mapDisplay.GetPlayer();
@@ -222,6 +231,8 @@ namespace Manager
         /// </summary>
         private void PlaceEnemy()
         {
+            // TODO: 各部屋に敵を配置する
+            
             // 床の位置を全部集める
             var floorPositions = CurrentMap.GetFloors();
             

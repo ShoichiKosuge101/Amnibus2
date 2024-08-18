@@ -10,8 +10,9 @@ GameObject:
   m_Component:
   - component: {fileID: 8451706106354504943}
   - component: {fileID: 1041165184965432805}
+  - component: {fileID: 488492306607327643}
   m_Layer: 0
-  m_Name: EnemyBakuBlue_3
+  m_Name: Enemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -73,8 +74,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: -72773355
+  m_SortingLayer: 5
   m_SortingOrder: 1
   m_Sprite: {fileID: -740034756383604967, guid: 87df49bc858b144ce97ab0fef6023af7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -87,3 +88,15 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &488492306607327643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2477944352083112489}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 96c738eab50841049488051b8595a3cf, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 

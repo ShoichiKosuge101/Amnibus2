@@ -17,7 +17,8 @@ namespace Scene
     public class SampleStage
         : SceneBase
     {
-        public CinemachineCamera virtualCamera;
+        [SerializeField]
+        private CinemachineCamera virtualCamera;
         
         [SerializeField]
         private DungeonData dungeonData;
@@ -27,11 +28,6 @@ namespace Scene
         /// </summary>
         [SerializeField]
         private MapDisplay mapDisplay;
-
-        /// <summary>
-        /// State管理クラス
-        /// </summary>
-        private StateManager _stateManager;
         
         /// <summary>
         /// シーンのサービスを登録
@@ -50,10 +46,10 @@ namespace Scene
         protected override void InitializeScene()
         {
             // State管理クラスの取得
-            _stateManager = new StateManager(dungeonData, mapDisplay, virtualCamera);
+            var stateManager = new StateManager(dungeonData, mapDisplay, virtualCamera);
             
             // イベント購読
-            SubscribeEvents(_stateManager);
+            SubscribeEvents(stateManager);
         }
 
         /// <summary>
@@ -65,12 +61,7 @@ namespace Scene
             stateManager
                 .OnGoalReachedRx
                 .TakeUntilDestroy(this)
-                .Subscribe(sceneName =>
-                {
-                    Debug.Log("Goal Reached!");
-                    
-                    LoadTargetScene(sceneName);
-                });
+                .Subscribe(LoadTargetScene);
         }
     }
 }

@@ -9,6 +9,7 @@ TagManager:
   - Goal
   - Wall
   - Floor
+  - Load
   layers:
   - Default
   - TransparentFX
@@ -57,6 +58,9 @@ TagManager:
     locked: 0
   - name: Player
     uniqueID: 3945808787
+    locked: 0
+  - name: Actor
+    uniqueID: 4222193941
     locked: 0
   m_RenderingLayers:
   - Default
