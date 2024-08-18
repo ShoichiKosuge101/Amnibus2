@@ -1,4 +1,5 @@
 ﻿using Constants;
+using Controller;
 using Dungeons;
 using Manager.Interface;
 using UniRx;
@@ -15,7 +16,9 @@ namespace Manager
     {
         public Layer2D CurrentMap { get; set; } = new(0, 0);
         private MapDisplay _mapDisplay;
-        
+
+        public PlayerController PlayerController { get; private set; }
+
         public Subject<Unit> OnGoalReachedRx { get; } = new();
         public Subject<Vector2Int> OnItemPickedUpRx { get; } = new();
 
@@ -45,6 +48,11 @@ namespace Manager
             
             // 初期マップの表示
             _mapDisplay.DisplayMap(this);
+            
+            // プレイヤー本体を取得
+            var player = _mapDisplay.GetPlayer();
+            // プレイヤーを保持
+            SetPlayer(player);
         }
 
         public void SetMap(Layer2D map)
@@ -105,7 +113,16 @@ namespace Manager
             // 移動後の座標にプレイヤーを上書き
             UpdateMap(afterPosition.x, afterPosition.y, MapTile.Player);
         }
-        
+
+        /// <summary>
+        /// プレイヤー情報の登録
+        /// </summary>
+        /// <param name="playerController"></param>
+        public void SetPlayer(PlayerController playerController)
+        {
+            PlayerController = playerController;
+        }
+
         /// <summary>
         /// ランダムな床の座標を取得
         /// </summary>

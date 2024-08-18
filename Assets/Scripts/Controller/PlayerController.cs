@@ -21,6 +21,9 @@ namespace Controller
         // 移動中かどうか
         private bool _isMoving;
         
+        // 次の座標
+        private Vector2 _nextPosition;
+        
         private readonly Subject<(Vector2Int, Vector2Int)> _onPositionChanged = new Subject<(Vector2Int, Vector2Int)>();
         public IObservable<(Vector2Int, Vector2Int)> OnPositionChanged => _onPositionChanged;
 
@@ -29,41 +32,46 @@ namespace Controller
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         private void Start()
         {
-　           // インプットマネージャーを取得
-            var inputManager = ServiceLocator.Instance.Resolve<IInputManager>();
-            // マップ管理クラスを取得
-            var mapManager = ServiceLocator.Instance.Resolve<IMapManager>();
-            
-            // 入力を監視
-            inputManager
-                .InputObservable
-                .Where(_ => !_isMoving)
-                .TakeUntilDestroy(this)
-                .Subscribe(input =>
-                {
-                    // トークンをキャンセル
-                    _tokenSource?.Cancel();
-                    // トークンを再生成
-                    _tokenSource = new CancellationTokenSource();
-                    
-                    // 移動先の座標を計算
-                    Vector3 targetPosition = transform.position + new Vector3(input.x, input.y, 0);
-
-                    // 通行可能でなければ移動しない
-                    if(!mapManager.CanThrough((int)targetPosition.x, (int)targetPosition.y))
-                    {
-                        return;
-                    }
-                    
-                    // 移動処理
-                    MoveAsync(new Vector3(input.x, input.y, 0), _tokenSource.Token).Forget();
-                });
+　           // // インプットマネージャーを取得
+            // var inputManager = ServiceLocator.Instance.Resolve<IInputManager>();
+            // // マップ管理クラスを取得
+            // var mapManager = ServiceLocator.Instance.Resolve<IMapManager>();
+            //
+            // // 入力を監視
+            // inputManager
+            //     .InputObservable
+            //     .Where(_ => !_isMoving)
+            //     .TakeUntilDestroy(this)
+            //     .Subscribe(input =>
+            //     {
+            //         // トークンをキャンセル
+            //         _tokenSource?.Cancel();
+            //         // トークンを再生成
+            //         _tokenSource = new CancellationTokenSource();
+            //         
+            //         // 移動先の座標を計算
+            //         Vector3 targetPosition = transform.position + new Vector3(input.x, input.y, 0);
+            //
+            //         // 通行可能でなければ移動しない
+            //         if(!mapManager.CanThrough((int)targetPosition.x, (int)targetPosition.y))
+            //         {
+            //             return;
+            //         }
+            //         
+            //         // 移動処理
+            //         MoveAsync(new Vector3(input.x, input.y, 0), _tokenSource.Token).Forget();
+            //     });
+        }
+        
+        public void SetNextPosition(Vector2 nextPosition)
+        {
+            _nextPosition = transform.position + (Vector3)nextPosition;
         }
         
         /// <summary>
         /// 移動処理
         /// </summary>
-        private async UniTask MoveAsync(Vector3 direction, CancellationToken token)
+        public async UniTask MoveAsync(CancellationToken token)
         {
             // 移動中フラグを立てる
             _isMoving = true;
@@ -71,15 +79,12 @@ namespace Controller
             // 今の座標を保持
             Vector2Int beforePosition = new Vector2Int((int)transform.position.x, (int)transform.position.y);
             
-            // 移動先の座標を計算
-            Vector3 targetPosition = transform.position + direction;
-
             try
             {
                 // 移動先に到達するまでループ
                 while (
                     transform != null 
-                    && transform.position != targetPosition)
+                    && transform.position != (Vector3)_nextPosition)
                 {
                     // キャンセルされたら処理を終了
                     token.ThrowIfCancellationRequested();
@@ -87,7 +92,7 @@ namespace Controller
                     transform.position = Vector3
                         .MoveTowards(
                             transform.position, 
-                            targetPosition, 
+                            _nextPosition, 
                             Time.deltaTime * speed
                         );
                 

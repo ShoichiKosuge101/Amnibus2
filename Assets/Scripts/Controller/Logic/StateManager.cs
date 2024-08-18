@@ -1,9 +1,7 @@
 ﻿using System;
 using Constants;
 using Controller.Logic.State;
-using Cysharp.Threading.Tasks;
 using Dungeons;
-using Dungeons.Factory;
 using Manager.Interface;
 using UniRx;
 using Unity.Cinemachine;
@@ -25,63 +23,85 @@ namespace Controller.Logic
         public EnemyAttackState EnemyAttackState { get; private set; }
         public TurnEndState TurnEndState { get; private set; }
         
+        /// <summary>
+        /// 現在の状態
+        /// </summary>
         public StateBase CurrentState { get; private set; }
         
         /// <summary>
         /// Map管理クラス
         /// </summary>
-        public IMapManager _mapManager;
+        public readonly IMapManager _mapManager;
+        public IMapManager MapManager => _mapManager;
         
-        private CompositeDisposable _disposable = new CompositeDisposable();
+        /// <summary>
+        /// 購読管理
+        /// </summary>
+        private readonly CompositeDisposable _disposable = new CompositeDisposable();
         
+        /// <summary>
+        /// シーン変更イベント
+        /// </summary>
         private readonly Subject<string> _onChangeSceneRx = new Subject<string>();
         public IObservable<string> OnGoalReachedRx => _onChangeSceneRx;
         
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        public StateManager(DungeonData dungeonData, MapDisplay mapDisplay, CinemachineCamera virtualCamera)
+        public StateManager(
+            DungeonData dungeonData, 
+            MapDisplay mapDisplay, 
+            CinemachineCamera virtualCamera
+            )
         {
-            SetUpState = new SetUpState(this);
+            // 最終的なマップ情報をマップ管理クラスに渡す
+            _mapManager = ServiceLocator.Instance.Resolve<IMapManager>();
+
+            SetUpState = new SetUpState(this, dungeonData, _mapManager, mapDisplay, virtualCamera);
             PlayerInputState = new PlayerInputState(this);
             PlayerMoveState = new PlayerMoveState(this);
             PlayerAttackState = new PlayerAttackState(this);
             EnemyMoveState = new EnemyMoveState(this);
             EnemyAttackState = new EnemyAttackState(this);
             TurnEndState = new TurnEndState(this);
-            
-            // シーンの初期化処理を記述
-            var dgGenerator = new StandardDungeonFactory().CreateDungeon(
-                dungeonData.Width, 
-                dungeonData.Height,
-                dungeonData.MinRoomSize,
-                dungeonData.MaxRoomSize,
-                dungeonData.OuterMargin
-            );
-            
-            // 最終的なマップ情報をマップ管理クラスに渡す
-            _mapManager = ServiceLocator.Instance.Resolve<IMapManager>();
-            // マップ管理クラスの初期化によってプレイヤー位置やゴールの決定
-            _mapManager.Initialize(dgGenerator.GetLayer(), mapDisplay);
-            
-            // プレイヤーを取得
-            var player = mapDisplay.GetPlayer();
-            
-            // CineMachineのターゲットをプレイヤーに設定
-            var cameraInitializer = new CameraInitializer();
-            cameraInitializer.SetupFollow(virtualCamera, player.gameObject);
-            
-            // イベント購読
-            SubscribeEvents(player, _mapManager, mapDisplay);
 
             // 初期状態を設定
             ChangeState(SetUpState);
+            
+            // イベント購読
+            SubscribeEvents(_mapManager, mapDisplay);
+            
+            // 毎フレーム更新
+            Observable
+                .EveryUpdate()
+                .Subscribe(_ =>
+                {
+                    Update();
+                })
+                .AddTo(_disposable);
+        }
+        
+        /// <summary>
+        /// デストラクタ
+        /// </summary>
+        ~StateManager()
+        {
+            _disposable.Dispose();
         }
 
-        private void SubscribeEvents(PlayerController player, IMapManager mapManager, MapDisplay mapDisplay)
+        /// <summary>
+        /// イベント購読
+        /// </summary>
+        /// <param name="player"></param>
+        /// <param name="mapManager"></param>
+        /// <param name="mapDisplay"></param>
+        private void SubscribeEvents(
+            IMapManager mapManager, 
+            MapDisplay mapDisplay
+            )
         {
             // プレイヤー位置を購読
-            player
+            mapManager.PlayerController
                 .OnPositionChanged
                 .Subscribe(positionChange =>
                 {
