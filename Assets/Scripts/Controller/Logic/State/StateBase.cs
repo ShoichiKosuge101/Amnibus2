@@ -34,7 +34,6 @@ namespace Controller.Logic.State
         /// </summary>
         public virtual void OnUpdate()
         {
-            Debug.Log("StateBase.OnUpdate");
         }
         
         /// <summary>

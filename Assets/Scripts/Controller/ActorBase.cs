@@ -77,5 +77,17 @@ namespace Controller
                     new Vector2Int((int)transform.position.x, (int)transform.position.y))
                 );
         }
+        
+        public void SetNextPosCurrent()
+        {
+            NextPosition = transform.position;
+        }
+        
+        public void Attack(ActorBase target)
+        {
+            NextPosition = transform.position;
+            
+            Debug.Log($"<color=yellow>{name} は {target.name}　を攻撃</color>");
+        }
     }
 }

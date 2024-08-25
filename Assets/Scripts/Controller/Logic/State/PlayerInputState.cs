@@ -59,9 +59,20 @@ namespace Controller.Logic.State
 
                     // 入力をプレイヤーに渡す
                     Owner.MapManager.PlayerController.SetNextPosition(input);
-                    
-                    // 移動Stateに遷移
-                    Owner.ChangeState(Owner.PlayerMoveState);
+
+                    // 敵に攻撃可能かどうか判定
+                    if (Owner.MapManager.IsExistEnemy(Owner.MapManager.PlayerController.NextPosition))
+                    {
+                        // 配置移動は行わない
+                        Owner.MapManager.PlayerController.SetNextPosCurrent();
+                        // 敵に攻撃するstateに遷移
+                        Owner.ChangeState(Owner.PlayerAttackState);
+                    }
+                    else
+                    {
+                        // 移動Stateに遷移
+                        Owner.ChangeState(Owner.PlayerMoveState);
+                    }
                 })
                 .AddTo(_disposable);
         }

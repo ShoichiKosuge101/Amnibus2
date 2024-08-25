@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Constants;
 using Manager.Interface;
 using UnityEngine;
 using UnityEngine.Tilemaps;
@@ -109,21 +110,32 @@ namespace Dungeons
                 // 配置を取得
                 Vector2Int position = new Vector2Int((int)center.Position.x, (int)center.Position.y) + direction;
 
-                // 壁や敵の場合はスキップ
-                if (!Map.CanThrough(position.x, position.y))
-                {
-                    continue;
-                }
-
                 // セル情報がある場合はスキップ
                 if (_cellInfos.Any(x => x.Position == position))
                 {
                     continue;
                 }
+                
+                // 通行不可の場合
+                if (!Map.CanThrough(position.x, position.y))
+                {
+                    // スキップ
+                    continue;
+                }
 
+                // 壁の場合
+                CellInfo cell;
+                // 敵の場合
+                if(Map.IsExistEnemy(position))
+                {
+                    cell = CreateCellInfo(position, endPos, center, MapTile.Enemy);
+                }
+                // 通常の場合
+                else
+                {
+                    cell = CreateCellInfo(position, endPos, center, MapTile.Floor);
+                }
                 // セル情報がない場合は新規作成
-                // 壁判定を併せて行う
-                var cell = CreateCellInfo(position, endPos, center);
                 _cellInfos.Add(cell);
 
                 // ゴールに到達した場合は終了処理
@@ -154,19 +166,29 @@ namespace Dungeons
         /// <param name="position"></param>
         /// <param name="endPos"></param>
         /// <param name="center"></param>
+        /// <param name="mapTile"></param>
         /// <returns></returns>
         private static CellInfo CreateCellInfo(
             Vector2Int position, 
             Vector2 endPos, 
-            CellInfo center
+            CellInfo center,
+            MapTile mapTile
             )
         {
             const int PASSAGE_COST = 1;
+            const int WALL_COST = 1000;
+            const int ENEMY_COST = 1000;
+            int additionalCost = mapTile.Properties switch
+            {
+                CellProperties.WALL  => WALL_COST,
+                CellProperties.ENEMY => ENEMY_COST,
+                _                    => PASSAGE_COST
+            };
             
             return new CellInfo
             {
                 Position = position,
-                Cost = center.Cost + PASSAGE_COST,
+                Cost = center.Cost + additionalCost,
                 Heuristic = Vector2.Distance(position, endPos),
                 Parent = center.Position,
                 IsOpen = true

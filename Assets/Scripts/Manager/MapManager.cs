@@ -160,11 +160,43 @@ namespace Manager
         /// <returns></returns>
         public bool CanThrough(int x, int y)
         {
-            // 床でも敵でもない場合は通行可能
-            return !CurrentMap.Get(x, y).IsWall
-                && !CurrentMap.Get(x, y).IsEnemy;
+            // 床でない場合は通行可能
+            return !CurrentMap.Get(x, y).IsWall;
         }
 
+        /// <summary>
+        /// 攻撃可能かどうか
+        /// </summary>
+        /// <param name="position">移動先</param>
+        /// <returns></returns>
+        public bool IsExistEnemy(Vector2 position)
+        {
+            // 敵の場合は攻撃可能
+            return EnemyManager.IsEnemy(position);
+        }
+
+        /// <summary>
+        /// 移動予定先に敵がいるかどうか
+        /// </summary>
+        /// <param name="nextPosition"></param>
+        /// <returns></returns>
+        public bool IsExistEnemyInNextPosition(Vector2 nextPosition)
+        {
+            // 敵の場合は攻撃可能
+            return EnemyManager.IsEnemyNextPosition(nextPosition);
+        }
+        
+        /// <summary>
+        /// 敵の攻撃可能かどうか
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="y"></param>
+        /// <returns></returns>
+        public bool IsExistPlayer(int x, int y)
+        {
+            // プレイヤーの場合は攻撃可能
+            return CurrentMap.Get(x, y).IsPlayer;
+        }
 
         /// <summary>
         /// プレイヤーの生成位置を返す

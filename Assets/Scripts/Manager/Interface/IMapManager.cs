@@ -40,6 +40,10 @@ namespace Manager.Interface
         Vector2Int GetRandomFloor();
 
         bool CanThrough(int x, int y);
+        
+        bool IsExistEnemy(Vector2 position);
+        bool IsExistEnemyInNextPosition(Vector2 nextPosition);
+        bool IsExistPlayer(int x, int y);
 
         void DiscardObj(Vector2Int position, MapTile mapTile);
         
