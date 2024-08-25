@@ -15,8 +15,12 @@ namespace Controller
         
         [SerializeField]
         private ActorData _actorData;
+        public int MaxHp => _actorData.Hp;
         
-        private int _currentHp;
+        /// <summary>
+        /// 現在のHP
+        /// </summary>
+        protected ReactiveProperty<int> _currentHpRx = new ReactiveProperty<int>(0);
         
         // 移動中かどうか
         public bool IsMoving { get; private set; }
@@ -43,7 +47,7 @@ namespace Controller
         private void Start()
         {
             // HPを格納
-            _currentHp = _actorData.Hp;
+            _currentHpRx.Value = _actorData.Hp;
         }
 
         public void SetNextPosition(Vector2 nextPosition)
@@ -160,9 +164,11 @@ namespace Controller
         /// <param name="damage"></param>
         public void Damage(int damage)
         {
-            _currentHp -= damage;
+            // ダメージ処理
+            // 0未満にならないようにする
+            _currentHpRx.Value = Math.Max(0, _currentHpRx.Value - damage);
             
-            if (_currentHp <= 0)
+            if (_currentHpRx.Value <= 0)
             {
                 Debug.Log($"<color=red>{name} は倒れた</color>");
                 

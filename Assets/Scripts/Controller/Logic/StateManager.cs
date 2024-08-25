@@ -61,6 +61,11 @@ namespace Controller.Logic
         public readonly Subject<Unit> OnGameOverRx = new Subject<Unit>();
         
         /// <summary>
+        /// 現在のHP
+        /// </summary>
+        public Subject<int> OnChangeHpRx = new Subject<int>();
+        
+        /// <summary>
         /// コンストラクタ
         /// </summary>
         public StateManager(
@@ -145,12 +150,24 @@ namespace Controller.Logic
                 .Subscribe(pos =>
                 {
                     Debug.Log("Item Get!");
+                    
+                    // プレイヤーの回復処理
+                    mapManager.PlayerController.RecoverHp();
 
                     // オブジェクトを破棄
                     mapDisplay.ReleaseObject(pos, MapTile.Treasure);
                     
                     // アイテムを取得したらマップからアイテムを破棄
                     MapManager.DiscardObj(pos, MapTile.Treasure);
+                })
+                .AddTo(_disposable);
+            
+            // プレイヤーのHPを購読して、UI表示に渡す
+            mapManager.PlayerController
+                .CurrentHpRx
+                .Subscribe(hp =>
+                {
+                    OnChangeHpRx.OnNext(hp);
                 })
                 .AddTo(_disposable);
             

@@ -5,6 +5,7 @@ using Dungeons;
 using Manager;
 using Manager.Interface;
 using Scene.Common;
+using UI;
 using UniRx;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -35,7 +36,7 @@ namespace Scene
         /// GameOver UI
         /// </summary>
         [SerializeField]
-        private RectTransform _gameOverUiRoot;
+        private RpgView _uiView;
         
         /// <summary>
         /// シーンのサービスを登録
@@ -57,7 +58,8 @@ namespace Scene
             var stateManager = new StateManager(dungeonData, mapDisplay, virtualCamera);
             
             // UI初期化
-            _gameOverUiRoot.gameObject.SetActive(false);
+            _uiView.SwitchActiveGameOverUi(false);
+            _uiView.SwitchActiveStatusUi(true);
             
             // イベント購読
             SubscribeEvents(stateManager);
@@ -74,6 +76,11 @@ namespace Scene
                 .TakeUntilDestroy(this)
                 .Subscribe(LoadTargetScene);
             
+            stateManager
+                .OnChangeHpRx
+                .TakeUntilDestroy(this)
+                .Subscribe(_uiView.SetHp);
+            
             // ゲームオーバー処理
             stateManager
                 .OnGameOverRx
@@ -82,7 +89,7 @@ namespace Scene
                 .SubscribeAwait(async _ =>
                 {
                     // UI表示
-                    _gameOverUiRoot.gameObject.SetActive(true);
+                    _uiView.SwitchActiveGameOverUi(true);
                     
                     // ２秒待って
                     await UniTask.WaitForSeconds(2);
