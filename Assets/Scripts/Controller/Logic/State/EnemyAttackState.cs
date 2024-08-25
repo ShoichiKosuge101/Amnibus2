@@ -1,4 +1,6 @@
-﻿namespace Controller.Logic.State
+﻿using Cysharp.Threading.Tasks;
+
+namespace Controller.Logic.State
 {
     public class EnemyAttackState
         : StateBase
@@ -9,9 +11,15 @@
 
         public override void OnEnter()
         {
+            ActionAsync().Forget();
+        }
+        
+        private async UniTask ActionAsync()
+        {
             foreach (var enemy in Owner.MapManager.EnemyManager.AttackEnemies)
             {
-                enemy.Attack(Owner.MapManager.PlayerController);
+                enemy.SetTarget(Owner.MapManager.PlayerController);
+                await enemy.AttackAsync();
             }
             
             // 攻撃リストをクリア

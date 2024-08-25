@@ -14,15 +14,17 @@ namespace Manager
         /// </summary>
         public List<EnemyController> Enemies { get; private set; }= new List<EnemyController>();
         public List<EnemyController> AttackEnemies { get; private set; }= new List<EnemyController>();
-        
+
         /// <summary>
         /// 敵かどうか
         /// </summary>
         /// <param name="position"></param>
+        /// <param name="enemy"></param>
         /// <returns></returns>
-        public bool IsEnemy(Vector3 position)
+        public bool IsEnemy(Vector3 position, out EnemyController enemy)
         {
-            return Enemies.Any(enemy => enemy.transform.position == position);
+            enemy = Enemies.FirstOrDefault(enemy => enemy.transform.position == position);
+            return enemy != null;
         }
         
         public bool IsEnemyNextPosition(Vector2 nextPosition)

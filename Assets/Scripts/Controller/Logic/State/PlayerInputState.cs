@@ -61,8 +61,11 @@ namespace Controller.Logic.State
                     Owner.MapManager.PlayerController.SetNextPosition(input);
 
                     // 敵に攻撃可能かどうか判定
-                    if (Owner.MapManager.IsExistEnemy(Owner.MapManager.PlayerController.NextPosition))
+                    if (Owner.MapManager.IsExistEnemy(Owner.MapManager.PlayerController.NextPosition, out var enemy))
                     {
+                        // ターゲットをセット
+                        Owner.MapManager.PlayerController.SetTarget(enemy);
+                        
                         // 配置移動は行わない
                         Owner.MapManager.PlayerController.SetNextPosCurrent();
                         // 敵に攻撃するstateに遷移

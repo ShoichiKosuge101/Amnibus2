@@ -169,10 +169,10 @@ namespace Manager
         /// </summary>
         /// <param name="position">移動先</param>
         /// <returns></returns>
-        public bool IsExistEnemy(Vector2 position)
+        public bool IsExistEnemy(Vector2 position, out EnemyController enemy)
         {
             // 敵の場合は攻撃可能
-            return EnemyManager.IsEnemy(position);
+            return EnemyManager.IsEnemy(position, out enemy);
         }
 
         /// <summary>

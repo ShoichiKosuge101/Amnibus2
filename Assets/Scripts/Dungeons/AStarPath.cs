@@ -128,7 +128,7 @@ namespace Dungeons
                 // 壁の場合
                 CellInfo cell;
                 // 敵の場合
-                if(Map.IsExistEnemy(position))
+                if(Map.IsExistEnemy(position, out _))
                 {
                     cell = CreateCellInfo(position, endPos, center, MapTile.Enemy);
                 }

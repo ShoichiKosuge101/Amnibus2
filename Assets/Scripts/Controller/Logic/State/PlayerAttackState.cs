@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+﻿using Cysharp.Threading.Tasks;
 
 namespace Controller.Logic.State
 {
@@ -11,13 +11,13 @@ namespace Controller.Logic.State
 
         public override void OnEnter()
         {
-            // TODO: FIXME 移動先は戻しているのでここでは確実に取れない
-            var enemy = Owner.MapManager.EnemyManager.GetAttackTarget(Owner.MapManager.PlayerController.NextPosition);
-            // 対象を取って、攻撃処理を実行
-            if (enemy != null)
-            {
-                Owner.MapManager.PlayerController.Attack(enemy);
-            }
+            ActionAsync().Forget();
+        }
+
+        private async UniTask ActionAsync()
+        {
+            // 攻撃処理
+            await Owner.MapManager.PlayerController.AttackAsync();
             
             // 敵のターンに移動
             Owner.ChangeState(Owner.EnemyMoveState);

@@ -41,7 +41,7 @@ namespace Manager.Interface
 
         bool CanThrough(int x, int y);
         
-        bool IsExistEnemy(Vector2 position);
+        bool IsExistEnemy(Vector2 position, out EnemyController enemy);
         bool IsExistEnemyInNextPosition(Vector2 nextPosition);
         bool IsExistPlayer(int x, int y);
 

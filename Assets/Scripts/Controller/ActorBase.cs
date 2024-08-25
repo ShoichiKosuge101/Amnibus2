@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using UniRx;
 using UnityEngine;
 using UnityEngine.Serialization;
@@ -18,6 +19,11 @@ namespace Controller
         
         // 次の座標
         public Vector2 NextPosition { get; private set; }
+        
+        /// <summary>
+        /// 攻撃対象
+        /// </summary>
+        private ActorBase _target;
         
         private readonly Subject<(Vector2Int, Vector2Int)> _onPositionChanged = new Subject<(Vector2Int, Vector2Int)>();
         public IObservable<(Vector2Int, Vector2Int)> OnPositionChanged => _onPositionChanged;
@@ -83,11 +89,43 @@ namespace Controller
             NextPosition = transform.position;
         }
         
-        public void Attack(ActorBase target)
+        public async UniTask AttackAsync()
         {
             NextPosition = transform.position;
             
-            Debug.Log($"<color=yellow>{name} は {target.name}　を攻撃</color>");
+            Debug.Log($"<color=yellow>{name} は {_target.name}　を攻撃</color>");
+            
+            // 攻撃アクション
+            await ActionAttackAsync();
+            
+            // 実行したら対象をクリア
+            _target = null;
+        }
+
+        /// <summary>
+        /// 攻撃アクション
+        /// </summary>
+        private async UniTask ActionAttackAsync()
+        {
+            // targetの方向にDOTweenを使って攻撃アニメーションを再生
+            // 一瞬targetのほうに移動して、元に戻るアニメーション
+            await transform.DOPunchPosition(
+                    (_target.transform.position - transform.position).normalized, 
+                    0.5f, 
+                    10, 
+                    0.5f
+                )
+                .SetLink(gameObject)
+                .AsyncWaitForCompletion();
+        }
+        
+        /// <summary>
+        /// 攻撃対象をセット
+        /// </summary>
+        /// <param name="target"></param>
+        public void SetTarget(in ActorBase target)
+        {
+            _target = target;
         }
     }
 }
