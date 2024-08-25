@@ -66,7 +66,12 @@ namespace Controller
             SetNextPosition(diff);
             
             // 向きの設定
-            _animatorController.SetKeyDirection(diff);
+            SetDirection(diff);
+        }
+        
+        public void SetDirection(Vector2 direction)
+        {
+            _animatorController.SetKeyDirection(direction);
         }
     }
 }

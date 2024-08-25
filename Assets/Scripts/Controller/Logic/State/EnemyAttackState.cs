@@ -19,6 +19,13 @@ namespace Controller.Logic.State
             foreach (var enemy in Owner.MapManager.EnemyManager.AttackEnemies)
             {
                 enemy.SetTarget(Owner.MapManager.PlayerController);
+                
+                var targetDirection = (Owner.MapManager.PlayerController.transform.position - enemy.transform.position).normalized;
+                
+                // 向きの設定
+                enemy.SetDirection(targetDirection);
+
+                // 攻撃
                 await enemy.AttackAsync();
             }
             
