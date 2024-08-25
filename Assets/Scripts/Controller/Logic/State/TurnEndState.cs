@@ -1,4 +1,5 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using System.Linq;
+using Cysharp.Threading.Tasks;
 
 namespace Controller.Logic.State
 {
@@ -21,6 +22,7 @@ namespace Controller.Logic.State
         {
             // 全ての行動が終わるまで待つ
             await UniTask.WaitWhile(() => Owner.MapManager.PlayerController.IsMoving);
+            await UniTask.WaitWhile(() => Owner.MapManager.EnemyManager.Enemies.Any(enemy => enemy.IsMoving));
             
             // ゴールしていなければ、次のターンへ
             if (!Owner.IsGoalReached)

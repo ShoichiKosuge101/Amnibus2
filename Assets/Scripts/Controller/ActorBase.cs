@@ -3,6 +3,7 @@ using System.Threading;
 using Cysharp.Threading.Tasks;
 using UniRx;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Controller
 {
@@ -16,7 +17,7 @@ namespace Controller
         public bool IsMoving { get; private set; }
         
         // 次の座標
-        private Vector2 _nextPosition;
+        public Vector2 NextPosition { get; private set; }
         
         private readonly Subject<(Vector2Int, Vector2Int)> _onPositionChanged = new Subject<(Vector2Int, Vector2Int)>();
         public IObservable<(Vector2Int, Vector2Int)> OnPositionChanged => _onPositionChanged;
@@ -25,7 +26,7 @@ namespace Controller
         
         public void SetNextPosition(Vector2 nextPosition)
         {
-            _nextPosition = transform.position + (Vector3)nextPosition;
+            NextPosition = transform.position + (Vector3)nextPosition;
         }
         
         /// <summary>
@@ -44,7 +45,7 @@ namespace Controller
                 // 移動先に到達するまでループ
                 while (
                     transform != null 
-                    && transform.position != (Vector3)_nextPosition)
+                    && transform.position != (Vector3)NextPosition)
                 {
                     // キャンセルされたら処理を終了
                     token.ThrowIfCancellationRequested();
@@ -52,7 +53,7 @@ namespace Controller
                     transform.position = Vector3
                         .MoveTowards(
                             transform.position, 
-                            _nextPosition, 
+                            NextPosition, 
                             Time.deltaTime * speed
                         );
                 

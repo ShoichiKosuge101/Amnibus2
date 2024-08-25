@@ -18,7 +18,7 @@ namespace Manager
         private MapDisplay _mapDisplay;
 
         public PlayerController PlayerController { get; private set; }
-        public EnemyManager EnemyManager { get; } = new();
+        public EnemyManager EnemyManager { get; private set; }
 
         public Subject<Unit> OnGoalReachedRx { get; } = new();
         public Subject<Vector2Int> OnItemPickedUpRx { get; } = new();
@@ -32,6 +32,8 @@ namespace Manager
         {
             CurrentMap = map;
             _mapDisplay = mapDisplay;
+            
+            EnemyManager = new EnemyManager();
             
             // ゴールを配置
             PlaceGoal();
@@ -162,6 +164,7 @@ namespace Manager
             return !CurrentMap.Get(x, y).IsWall
                 && !CurrentMap.Get(x, y).IsEnemy;
         }
+
 
         /// <summary>
         /// プレイヤーの生成位置を返す

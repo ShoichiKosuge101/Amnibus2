@@ -32,7 +32,7 @@ namespace Test
     /// <summary>
     /// A*探索
     /// </summary>
-    public class AStarPath
+    public class AStarPathFinding
         : MonoBehaviour
     {
         public Tilemap Map;
