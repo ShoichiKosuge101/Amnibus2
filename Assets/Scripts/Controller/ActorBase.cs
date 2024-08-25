@@ -109,10 +109,11 @@ namespace Controller
         {
             // targetの方向にDOTweenを使って攻撃アニメーションを再生
             // 一瞬targetのほうに移動して、元に戻るアニメーション
+            // DOPunchPosition(攻撃方向, 振動時間, 振動回数, 振動の強さ)
             await transform.DOPunchPosition(
                     (_target.transform.position - transform.position).normalized, 
-                    0.5f, 
-                    10, 
+                    0.3f, 
+                    1, 
                     0.5f
                 )
                 .SetLink(gameObject)
