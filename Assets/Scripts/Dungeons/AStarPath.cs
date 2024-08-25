@@ -4,7 +4,6 @@ using System.Linq;
 using Constants;
 using Manager.Interface;
 using UnityEngine;
-using UnityEngine.Tilemaps;
 
 namespace Dungeons
 {
@@ -40,6 +39,9 @@ namespace Dungeons
         public IMapManager Map;
         private List<CellInfo> _cellInfos;
         private bool _exitFlg;
+        
+        private const int INITIAL_PARENT_X = -999;
+        private const int INITIAL_PARENT_Y = -999;
 
         /// <summary>
         /// A*探索
@@ -61,7 +63,7 @@ namespace Dungeons
                 Position = startPos,
                 Cost = 0,
                 Heuristic = Vector2.Distance(startPos, endPos),
-                Parent = new Vector2Int(-999, -999), // 取り得ないもの
+                Parent = new Vector2Int(INITIAL_PARENT_X, INITIAL_PARENT_Y), // 取り得ないもの
                 IsOpen = true
             };
 
@@ -144,7 +146,7 @@ namespace Dungeons
                     // 親の情報をたどっていく
                     CellInfo preCell = cell;
                     // 初回手前まで遡る
-                    while(preCell.Parent != new Vector2Int(-999, -999))
+                    while(preCell.Parent != new Vector2Int(INITIAL_PARENT_X, INITIAL_PARENT_Y))
                     {
                         // 移動先の座標を取得
                         path = preCell.Position;
@@ -177,7 +179,7 @@ namespace Dungeons
         {
             const int PASSAGE_COST = 1;
             const int WALL_COST = 1000;
-            const int ENEMY_COST = 1000;
+            const int ENEMY_COST = 10;
             int additionalCost = mapTile.Properties switch
             {
                 CellProperties.WALL  => WALL_COST,
