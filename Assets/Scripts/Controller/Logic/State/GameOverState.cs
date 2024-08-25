@@ -1,8 +1,11 @@
-﻿using Cysharp.Threading.Tasks;
+﻿using UniRx;
 using UnityEngine;
 
 namespace Controller.Logic.State
 {
+    /// <summary>
+    /// ゲームオーバーState
+    /// </summary>
     public class GameOverState
         : StateBase
     {
@@ -15,17 +18,8 @@ namespace Controller.Logic.State
             // ゲームオーバー処理
             Debug.Log("<color=red>Game Over</color>");
             
-            // タイトルに戻す処理
-            ChangeSceneAsync().Forget();
-        }
-        
-        private async UniTask ChangeSceneAsync()
-        {
-            // 2秒待機
-            await UniTask.WaitForSeconds(2);
-            
-            // タイトルに戻す
-            Owner.ChangeScene("Title");
+            // ゲームオーバーの通知
+            Owner.OnGameOverRx.OnNext(Unit.Default);
         }
     }
 }

@@ -54,6 +54,11 @@ namespace Controller.Logic
         /// </summary>
         private readonly Subject<string> _onChangeSceneRx = new Subject<string>();
         public IObservable<string> OnGoalReachedRx => _onChangeSceneRx;
+
+        /// <summary>
+        /// ゲームオーバーイベント
+        /// </summary>
+        public readonly Subject<Unit> OnGameOverRx = new Subject<Unit>();
         
         /// <summary>
         /// コンストラクタ

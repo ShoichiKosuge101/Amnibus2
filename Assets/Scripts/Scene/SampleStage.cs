@@ -1,4 +1,6 @@
 ﻿using Controller.Logic;
+using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks.Linq;
 using Dungeons;
 using Manager;
 using Manager.Interface;
@@ -30,6 +32,12 @@ namespace Scene
         private MapDisplay mapDisplay;
         
         /// <summary>
+        /// GameOver UI
+        /// </summary>
+        [SerializeField]
+        private RectTransform _gameOverUiRoot;
+        
+        /// <summary>
         /// シーンのサービスを登録
         /// </summary>
         protected override void RegisterSceneServices()
@@ -48,6 +56,9 @@ namespace Scene
             // State管理クラスの取得
             var stateManager = new StateManager(dungeonData, mapDisplay, virtualCamera);
             
+            // UI初期化
+            _gameOverUiRoot.gameObject.SetActive(false);
+            
             // イベント購読
             SubscribeEvents(stateManager);
         }
@@ -62,6 +73,23 @@ namespace Scene
                 .OnGoalReachedRx
                 .TakeUntilDestroy(this)
                 .Subscribe(LoadTargetScene);
+            
+            // ゲームオーバー処理
+            stateManager
+                .OnGameOverRx
+                .TakeUntilDestroy(this)
+                .ToUniTaskAsyncEnumerable()
+                .SubscribeAwait(async _ =>
+                {
+                    // UI表示
+                    _gameOverUiRoot.gameObject.SetActive(true);
+                    
+                    // ２秒待って
+                    await UniTask.WaitForSeconds(2);
+                    
+                    // タイトルへ
+                    LoadTargetScene("Title");
+                });
         }
     }
 }
