@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using Controller;
+using UniRx;
 using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
@@ -35,6 +36,16 @@ namespace Manager
         public void AddEnemy(EnemyController enemy)
         {
             Enemies.Add(enemy);
+            
+            // 倒されたときの購読処理
+            enemy
+                .OnDefeatRx
+                .TakeUntilDestroy(enemy)
+                .Subscribe(_ =>
+            {
+                // 自分自身を管理から外す
+                RemoveEnemy(enemy);
+            });
         }
         
         public void RemoveEnemy(EnemyController enemy)

@@ -4,7 +4,6 @@ using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UniRx;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace Controller
 {
@@ -13,6 +12,11 @@ namespace Controller
     {
         [SerializeField] 
         private float speed = 5.0f;
+        
+        [SerializeField]
+        private ActorData _actorData;
+        
+        private int _currentHp;
         
         // 移動中かどうか
         public bool IsMoving { get; private set; }
@@ -28,8 +32,20 @@ namespace Controller
         private readonly Subject<(Vector2Int, Vector2Int)> _onPositionChanged = new Subject<(Vector2Int, Vector2Int)>();
         public IObservable<(Vector2Int, Vector2Int)> OnPositionChanged => _onPositionChanged;
 
+        /// <summary>
+        /// 倒された時のイベント
+        /// </summary>
+        private readonly Subject<Unit> _onDefeatRx = new Subject<Unit>();
+        public IObservable<Unit> OnDefeatRx => _onDefeatRx;
+
         private CancellationTokenSource _tokenSource;
-        
+
+        private void Start()
+        {
+            // HPを格納
+            _currentHp = _actorData.Hp;
+        }
+
         public void SetNextPosition(Vector2 nextPosition)
         {
             NextPosition = transform.position + (Vector3)nextPosition;
@@ -91,13 +107,22 @@ namespace Controller
         
         public async UniTask AttackAsync()
         {
+            // 対象がいない場合は処理を終了
+            if (_target == null)
+            {
+                return;
+            }
+            
             NextPosition = transform.position;
             
             Debug.Log($"<color=yellow>{name} は {_target.name}　を攻撃</color>");
             
             // 攻撃アクション
             await ActionAttackAsync();
-            
+
+            // ダメージ処理
+            _target.Damage(_actorData.Attack);
+
             // 実行したら対象をクリア
             _target = null;
         }
@@ -127,6 +152,33 @@ namespace Controller
         public void SetTarget(in ActorBase target)
         {
             _target = target;
+        }
+        
+        /// <summary>
+        /// ダメージ処理
+        /// </summary>
+        /// <param name="damage"></param>
+        public void Damage(int damage)
+        {
+            _currentHp -= damage;
+            
+            if (_currentHp <= 0)
+            {
+                Debug.Log($"<color=red>{name} は倒れた</color>");
+                
+                _onDefeatRx.OnNext(Unit.Default);
+                    
+                // 敵なら直ぐに削除
+                if (this is EnemyController)
+                {
+                    Delete();
+                }
+            }
+        }
+        
+        public void Delete()
+        {
+            Destroy(gameObject);
         }
     }
 }

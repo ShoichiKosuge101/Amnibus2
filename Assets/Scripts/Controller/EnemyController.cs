@@ -24,6 +24,11 @@ namespace Controller
         /// <returns></returns>
         public bool CanAttackPlayer(PlayerController player)
         {
+            if (player == null)
+            {
+                return false;
+            }
+            
             foreach (var range in _attackRange)
             {
                 Vector2Int currentPosition = new Vector2Int((int)transform.position.x, (int)transform.position.y);

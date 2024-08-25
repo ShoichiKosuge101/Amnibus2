@@ -266,8 +266,6 @@ namespace Manager
         /// </summary>
         private void PlaceEnemy()
         {
-            // TODO: 各部屋に敵を配置する
-            
             // 床の位置を全部集める
             var floorPositions = CurrentMap.GetFloors();
             

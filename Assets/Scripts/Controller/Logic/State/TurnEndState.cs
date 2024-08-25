@@ -24,6 +24,16 @@ namespace Controller.Logic.State
             await UniTask.WaitWhile(() => Owner.MapManager.PlayerController.IsMoving);
             await UniTask.WaitWhile(() => Owner.MapManager.EnemyManager.Enemies.Any(enemy => enemy.IsMoving));
             
+            // プレイヤーが死亡していれば、ゲームオーバーStateに遷移
+            if (Owner.IsGameOver)
+            {
+                // プレイヤーはここで削除
+                Owner.MapManager.PlayerController.Delete();
+                
+                Owner.ChangeState(Owner.GameOverState);
+                return;
+            }
+            
             // ゴールしていなければ、次のターンへ
             if (!Owner.IsGoalReached)
             {

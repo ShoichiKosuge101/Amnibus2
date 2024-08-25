@@ -101,3 +101,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 5
+  _actorData: {fileID: 11400000, guid: 9456a3b343d511f409ee3e9e52ca9076, type: 2}

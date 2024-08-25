@@ -22,6 +22,7 @@ namespace Controller.Logic
         public EnemyMoveState EnemyMoveState { get; private set; }
         public EnemyAttackState EnemyAttackState { get; private set; }
         public TurnEndState TurnEndState { get; private set; }
+        public GameOverState GameOverState { get; private set; }
         
         /// <summary>
         /// 現在の状態
@@ -32,6 +33,11 @@ namespace Controller.Logic
         /// ゴールに到達したかどうか
         /// </summary>
         public bool IsGoalReached { get; private set; }
+        
+        /// <summary>
+        /// ゲームオーバーかどうか
+        /// </summary>
+        public bool IsGameOver { get; private set; }
 
         /// <summary>
         /// Map管理クラス
@@ -58,6 +64,10 @@ namespace Controller.Logic
             CinemachineCamera virtualCamera
             )
         {
+            // フラグの初期化
+            IsGoalReached = false;
+            IsGameOver = false;
+            
             // 最終的なマップ情報をマップ管理クラスに渡す
             MapManager = ServiceLocator.Instance.Resolve<IMapManager>();
 
@@ -75,6 +85,7 @@ namespace Controller.Logic
             EnemyMoveState = new EnemyMoveState(this);
             EnemyAttackState = new EnemyAttackState(this);
             TurnEndState = new TurnEndState(this);
+            GameOverState = new GameOverState(this);
 
             // 初期状態を設定
             ChangeState(SetUpState);
@@ -135,6 +146,18 @@ namespace Controller.Logic
                     
                     // アイテムを取得したらマップからアイテムを破棄
                     MapManager.DiscardObj(pos, MapTile.Treasure);
+                })
+                .AddTo(_disposable);
+            
+            // プレイヤーの死亡処理
+            mapManager.PlayerController
+                .OnDefeatRx
+                .Subscribe(_ =>
+                {
+                    // この購読はいらないかも
+                    Debug.Log("Player Dead!");
+                    
+                    IsGameOver = true;
                 })
                 .AddTo(_disposable);
         }
