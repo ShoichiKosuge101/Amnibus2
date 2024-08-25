@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Controller.Animator;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UniRx;
@@ -16,6 +17,9 @@ namespace Controller
         [SerializeField]
         private ActorData _actorData;
         public int MaxHp => _actorData.Hp;
+        
+        [SerializeField]
+        protected PlayerAnimatorController _animatorController;
         
         /// <summary>
         /// 現在のHP

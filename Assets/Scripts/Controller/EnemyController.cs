@@ -52,7 +52,7 @@ namespace Controller
                 Vector2Int.FloorToInt(transform.position), 
                 Vector2Int.FloorToInt(mapManager.PlayerController.NextPosition));
             // 次の移動先に変換する為、現在の場所との差分を取得
-            var diff = nextPosition - (Vector2)transform.position;
+            var diff = (nextPosition - (Vector2)transform.position).normalized;
             
             // 重なり問題の対処
             // 移動先にすでに敵がいる場合は移動しない
@@ -64,6 +64,9 @@ namespace Controller
             
             // 移動先を設定
             SetNextPosition(diff);
+            
+            // 向きの設定
+            _animatorController.SetKeyDirection(diff);
         }
     }
 }

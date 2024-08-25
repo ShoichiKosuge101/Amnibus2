@@ -59,6 +59,9 @@ namespace Controller.Logic.State
 
                     // 入力をプレイヤーに渡す
                     Owner.MapManager.PlayerController.SetNextPosition(input);
+                    
+                    // Animator更新
+                    Owner.MapManager.PlayerController.SetAnimator(input.normalized);
 
                     // 敵に攻撃可能かどうか判定
                     if (Owner.MapManager.IsExistEnemy(Owner.MapManager.PlayerController.NextPosition, out var enemy))

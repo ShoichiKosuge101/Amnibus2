@@ -1,3 +1,4 @@
+using Controller.Animator;
 using UnityEngine;
 using UniRx;
 
@@ -21,6 +22,11 @@ namespace Controller
         {
             // 最大を超えるようであれば最大値にする
             _currentHpRx.Value = Mathf.Min(_currentHpRx.Value + _itemRecoverHp, MaxHp);
+        }
+        
+        public void SetAnimator(Vector2 direction)
+        {
+            _animatorController.SetKeyDirection(direction);
         }
     }
 }
