@@ -81,6 +81,35 @@ namespace Controller.Logic.State
                     }
                 })
                 .AddTo(_disposable);
+            
+            // インベントリを開く
+            _inputManager
+                .OnSwitchInventoryOpenRx
+                .Where(_ => Owner.CurrentState == this)
+                .Subscribe(_ =>
+                {
+                    Debug.Log("インベントリを開く");
+                    
+                    // インベントリを開く
+                    // Owner.UiView.SwitchActiveInventoryUi();
+
+                    // 開いている間は動かない
+                    // もう一度押したら閉じる
+                })
+                .AddTo(_disposable);
+            
+            // アイテムを使用
+            _inputManager
+                .OnUseItemRx
+                .Where(_ => Owner.CurrentState == this)
+                .Subscribe(_ =>
+                {
+                    Debug.Log("アイテムを使用");
+                    
+                    // アイテムを使用
+                    // Owner.MapManager.PlayerController.UseItem();
+                })
+                .AddTo(_disposable);
         }
         
         public override void OnUpdate()

@@ -2,6 +2,7 @@
 using UniRx;
 using UnityEngine;
 using Utils.Interface;
+using Unit = Unity.VisualScripting.Unit;
 
 namespace Utils
 {
@@ -33,5 +34,15 @@ namespace Utils
                 return vector.normalized;
             })
             .Where(v => v.sqrMagnitude > 0.1f);
+
+        public IObservable<bool> OnSwitchInventoryOpenRx => Observable
+            .EveryUpdate()
+            .Where(_ => Input.GetButtonDown("Inventory"))
+            .Select(_ => true);
+
+        public IObservable<bool> OnUseItemRx => Observable
+            .EveryUpdate()
+            .Where(_ => Input.GetButtonDown("UseItem"))
+            .Select(_ => true);
     }
 }

@@ -18,9 +18,6 @@ namespace Controller.Logic.State
             // 次のシーンを取得
             string nextSceneName = StageManager.GetNextSceneName(currentScene);
             
-            // // 初期化中フラグを立てる
-            // Owner.SetInitializeFlag(true);
-                
             // ゴールしていれば、ゲームクリア
             Owner.ChangeScene(nextSceneName);
         }

@@ -62,9 +62,6 @@ namespace Controller.Logic.State
             var cameraInitializer = new CameraInitializer();
             cameraInitializer.SetupFollow(_virtualCamera, _mapManager.PlayerController.gameObject);
             
-            // // 初期化フラグを下す
-            // Owner.SetInitializeFlag(false);
-            
             Owner.ChangeState(Owner.PlayerInputState);
         }
     }
