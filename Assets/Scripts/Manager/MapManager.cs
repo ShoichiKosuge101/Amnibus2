@@ -134,6 +134,11 @@ namespace Manager
             PlayerController = playerController;
         }
 
+        public string GetObjTag(int x, int y, MapTile mapTile)
+        {
+            return CurrentMap.Get(x, y).GetTag();
+        }
+
         /// <summary>
         /// ランダムな床の座標を取得
         /// </summary>

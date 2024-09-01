@@ -16,6 +16,9 @@ namespace Controller.Logic.State
         
         private async UniTask ActionAsync()
         {
+            // プレイヤーが移動中の場合、待機
+            await UniTask.WaitWhile(() => Owner.MapManager.PlayerController.IsMoving);
+            
             foreach (var enemy in Owner.MapManager.EnemyManager.AttackEnemies)
             {
                 enemy.SetTarget(Owner.MapManager.PlayerController);

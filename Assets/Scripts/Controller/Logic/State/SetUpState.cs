@@ -40,6 +40,9 @@ namespace Controller.Logic.State
             _virtualCamera = virtualCamera;
         }
 
+        /// <summary>
+        /// 初期化処理
+        /// </summary>
         public override void OnEnter()
         {
             // シーンの初期化処理を記述

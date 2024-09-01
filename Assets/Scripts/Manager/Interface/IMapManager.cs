@@ -37,6 +37,9 @@ namespace Manager.Interface
         /// <param name="playerController"></param>
         void SetPlayer(PlayerController playerController);
         
+        // 位置情報とタイル種別からオブジェクト名を取得
+        string GetObjTag(int x, int y, MapTile mapTile);
+        
         Vector2Int GetRandomFloor();
 
         bool CanThrough(int x, int y);

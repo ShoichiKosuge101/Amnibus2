@@ -9,6 +9,7 @@ using UI;
 using UniRx;
 using Unity.Cinemachine;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Utils;
 using Utils.Interface;
 
@@ -47,6 +48,8 @@ namespace Scene
             ServiceLocator.Instance.Register<IInputManager>(new InputManager());
             // マップ管理クラスを登録
             ServiceLocator.Instance.Register<IMapManager>(new MapManager());
+            // インベントリ管理クラスを登録
+            ServiceLocator.Instance.Register<IInventoryManager>(new InventoryManager());
         }
         
         /// <summary>

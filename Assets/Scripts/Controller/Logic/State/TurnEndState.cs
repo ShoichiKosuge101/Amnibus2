@@ -1,5 +1,7 @@
 ﻿using System.Linq;
 using Cysharp.Threading.Tasks;
+using Scene;
+using UnityEngine.SceneManagement;
 
 namespace Controller.Logic.State
 {
@@ -21,7 +23,6 @@ namespace Controller.Logic.State
         private async UniTask InitializeAsync()
         {
             // 全ての行動が終わるまで待つ
-            await UniTask.WaitWhile(() => Owner.MapManager.PlayerController.IsMoving);
             await UniTask.WaitWhile(() => Owner.MapManager.EnemyManager.Enemies.Any(enemy => enemy.IsMoving));
             
             // プレイヤーが死亡していれば、ゲームオーバーStateに遷移
@@ -41,8 +42,14 @@ namespace Controller.Logic.State
             }
             else
             {
+                // 現在のシーン名を取得
+                string sceneName = SceneManager.GetActiveScene().name;
+                var currentScene = StageManager.GetStage(sceneName);
+                // 次のシーンを取得
+                string nextSceneName = StageManager.GetNextSceneName(currentScene);
+                
                 // ゴールしていれば、ゲームクリア
-                Owner.ChangeScene("Title");
+                Owner.ChangeScene(nextSceneName);
             }
         }
     }

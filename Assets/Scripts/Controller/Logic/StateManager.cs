@@ -63,7 +63,7 @@ namespace Controller.Logic
         /// <summary>
         /// 現在のHP
         /// </summary>
-        public Subject<int> OnChangeHpRx = new Subject<int>();
+        public readonly Subject<int> OnChangeHpRx = new Subject<int>();
         
         /// <summary>
         /// コンストラクタ
@@ -150,6 +150,13 @@ namespace Controller.Logic
                 .Subscribe(pos =>
                 {
                     Debug.Log("Item Get!");
+                    
+                    // TODO: オブジェクト名を取得できるようにする
+                    var itemKind = ItemKind.GetItemKind("Hp");
+                    // // インベントリに保存
+                    // mapManager.InventoryManager.AddItem(itemKind);
+                    // // DEBUG: インベントリの中身を表示
+                    // mapManager.InventoryManager.ShowInventory();
                     
                     // プレイヤーの回復処理
                     mapManager.PlayerController.RecoverHp();
