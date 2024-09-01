@@ -91,7 +91,7 @@ namespace Controller.Logic.State
                     Debug.Log("インベントリを開く");
                     
                     // インベントリを開く
-                    // Owner.UiView.SwitchActiveInventoryUi();
+                    Owner.SwitchInventoryActive();
 
                     // 開いている間は動かない
                     // もう一度押したら閉じる

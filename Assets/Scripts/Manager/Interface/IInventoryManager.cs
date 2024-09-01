@@ -1,4 +1,6 @@
-﻿namespace Manager.Interface
+﻿using Item;
+
+namespace Manager.Interface
 {
     /// <summary>
     /// インベントリ管理クラス
@@ -25,6 +27,12 @@
         /// <param name="itemId"></param>
         /// <returns></returns>
         int GetItem(long itemId);
+        
+        /// <summary>
+        /// アイテム一覧取得
+        /// </summary>
+        /// <returns></returns>
+        InventoryView.ItemData[] GetInventoryItems();
         
         /// <summary>
         /// アイテムを全削除する

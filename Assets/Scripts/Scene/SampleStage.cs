@@ -98,6 +98,16 @@ namespace Scene
                 .TakeUntilDestroy(this)
                 .Subscribe(_uiView.SetHp);
             
+            // インベントリ開く処理
+            stateManager
+                .OnChangeInventoryActiveRx
+                .TakeUntilDestroy(this)
+                .Subscribe(isActive =>
+                {
+                    // UI表示
+                    _uiView.SwitchActiveInventoryUi(isActive);
+                });
+            
             // ゲームオーバー処理
             stateManager
                 .OnGameOverRx

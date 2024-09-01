@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Item;
 using Manager.Interface;
 
 namespace Manager
@@ -50,7 +51,19 @@ namespace Manager
         {
             return _inventory.GetValueOrDefault(itemId, 0);
         }
-        
+
+        public InventoryView.ItemData[] GetInventoryItems()
+        {
+            var items = new List<InventoryView.ItemData>();
+            foreach (var item in _inventory)
+            {
+                // TODO: 本当はアイテムごとのSpriteを取るようにしたい
+                items.Add(new InventoryView.ItemData(null, item.Value));
+            }
+
+            return items.ToArray();
+        }
+
         /// <summary>
         /// アイテム全削除
         /// </summary>

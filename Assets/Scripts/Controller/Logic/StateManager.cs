@@ -68,8 +68,8 @@ namespace Controller.Logic
         public readonly Subject<int> OnChangeHpRx = new Subject<int>();
         private readonly PlayerHpService _playerHpService;
         
-        // // シーン遷移中の購読処理中断フラグ
-        // private bool _isInitializing;
+        public bool IsInventoryOpened { get; private set; }
+        public readonly Subject<bool> OnChangeInventoryActiveRx = new Subject<bool>();
         
         /// <summary>
         /// コンストラクタ
@@ -83,6 +83,7 @@ namespace Controller.Logic
             // フラグの初期化
             IsGoalReached = false;
             IsGameOver = false;
+            IsInventoryOpened = false;
             
             // 最終的なマップ情報をマップ管理クラスに渡す
             MapManager = ServiceLocator.Instance.Resolve<IMapManager>();
@@ -125,7 +126,6 @@ namespace Controller.Logic
         /// <summary>
         /// イベント購読
         /// </summary>
-        /// <param name="player"></param>
         /// <param name="mapManager"></param>
         /// <param name="mapDisplay"></param>
         private void SubscribeEvents(
@@ -158,17 +158,14 @@ namespace Controller.Logic
                 .OnItemPickedUpRx
                 .Subscribe(pos =>
                 {
-                    Debug.Log("Item Get!");
-                    
                     // TODO: オブジェクト名を取得できるようにする
                     var itemKind = ItemKind.GetItemKind("Hp");
-                    // // インベントリに保存
-                    // mapManager.InventoryManager.AddItem(itemKind);
-                    // // DEBUG: インベントリの中身を表示
-                    // mapManager.InventoryManager.ShowInventory();
+                    // インベントリに保存
+                    var inventoryManager = ServiceLocator.Instance.Resolve<IInventoryManager>();
+                    inventoryManager.AddItem(itemKind.ItemId, 1);
                     
-                    // プレイヤーの回復処理
-                    mapManager.PlayerController.RecoverHp();
+                    // // プレイヤーの回復処理
+                    // mapManager.PlayerController.RecoverHp();
 
                     // オブジェクトを破棄
                     mapDisplay.ReleaseObject(pos, MapTile.Treasure);
@@ -184,12 +181,6 @@ namespace Controller.Logic
                 .SkipLatestValueOnSubscribe()
                 .Subscribe(hp =>
                 {
-                    // // 初期化中は処理をスキップ
-                    // if(_isInitializing)
-                    // {
-                    //     return;
-                    // }
-                    
                     // シーン遷移時の管理用サービスに現在のHPを渡す
                     _playerHpService.SetHp(hp);
                     
@@ -225,15 +216,6 @@ namespace Controller.Logic
             CurrentState.OnEnter();
         }
         
-        // /// <summary>
-        // /// 初期化フラグの設定
-        // /// </summary>
-        // /// <param name="isInitializing"></param>
-        // public void SetInitializeFlag(bool isInitializing)
-        // {
-        //     _isInitializing = isInitializing;
-        // }
-        
         /// <summary>
         /// 状態の更新
         /// </summary>
@@ -255,6 +237,17 @@ namespace Controller.Logic
             
             // 終了処理
             Exit();
+        }
+
+        /// <summary>
+        /// インベントリ表示の切り替え
+        /// </summary>
+        public void SwitchInventoryActive()
+        {
+            IsInventoryOpened = !IsInventoryOpened;
+            
+            // インベントリの表示切替
+            OnChangeInventoryActiveRx.OnNext(IsInventoryOpened);
         }
         
         /// <summary>
