@@ -42,14 +42,8 @@ namespace Controller.Logic.State
             }
             else
             {
-                // 現在のシーン名を取得
-                string sceneName = SceneManager.GetActiveScene().name;
-                var currentScene = StageManager.GetStage(sceneName);
-                // 次のシーンを取得
-                string nextSceneName = StageManager.GetNextSceneName(currentScene);
-                
-                // ゴールしていれば、ゲームクリア
-                Owner.ChangeScene(nextSceneName);
+                // ゴールしていれば、ゴールStateに遷移
+                Owner.ChangeState(Owner.GoalState);
             }
         }
     }

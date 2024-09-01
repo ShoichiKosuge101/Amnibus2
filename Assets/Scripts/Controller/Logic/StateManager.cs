@@ -3,6 +3,7 @@ using Constants;
 using Controller.Logic.State;
 using Dungeons;
 using Manager.Interface;
+using Manager.Service;
 using UniRx;
 using Unity.Cinemachine;
 using UnityEngine;
@@ -23,7 +24,8 @@ namespace Controller.Logic
         public EnemyAttackState EnemyAttackState { get; private set; }
         public TurnEndState TurnEndState { get; private set; }
         public GameOverState GameOverState { get; private set; }
-        
+        public StateBase GoalState { get; set; }
+
         /// <summary>
         /// 現在の状態
         /// </summary>
@@ -64,6 +66,10 @@ namespace Controller.Logic
         /// 現在のHP
         /// </summary>
         public readonly Subject<int> OnChangeHpRx = new Subject<int>();
+        private readonly PlayerHpService _playerHpService;
+        
+        // // シーン遷移中の購読処理中断フラグ
+        // private bool _isInitializing;
         
         /// <summary>
         /// コンストラクタ
@@ -80,6 +86,8 @@ namespace Controller.Logic
             
             // 最終的なマップ情報をマップ管理クラスに渡す
             MapManager = ServiceLocator.Instance.Resolve<IMapManager>();
+            // Hp管理サービスを取得
+            _playerHpService = ServiceLocator.Instance.Resolve<PlayerHpService>();
 
             // ダンジョン生成に必要なものを渡す
             SetUpState = new SetUpState(
@@ -96,6 +104,7 @@ namespace Controller.Logic
             EnemyAttackState = new EnemyAttackState(this);
             TurnEndState = new TurnEndState(this);
             GameOverState = new GameOverState(this);
+            GoalState = new GoalState(this);
 
             // 初期状態を設定
             ChangeState(SetUpState);
@@ -172,8 +181,18 @@ namespace Controller.Logic
             // プレイヤーのHPを購読して、UI表示に渡す
             mapManager.PlayerController
                 .CurrentHpRx
+                .SkipLatestValueOnSubscribe()
                 .Subscribe(hp =>
                 {
+                    // // 初期化中は処理をスキップ
+                    // if(_isInitializing)
+                    // {
+                    //     return;
+                    // }
+                    
+                    // シーン遷移時の管理用サービスに現在のHPを渡す
+                    _playerHpService.SetHp(hp);
+                    
                     OnChangeHpRx.OnNext(hp);
                 })
                 .AddTo(_disposable);
@@ -205,6 +224,15 @@ namespace Controller.Logic
             CurrentState = nextState;
             CurrentState.OnEnter();
         }
+        
+        // /// <summary>
+        // /// 初期化フラグの設定
+        // /// </summary>
+        // /// <param name="isInitializing"></param>
+        // public void SetInitializeFlag(bool isInitializing)
+        // {
+        //     _isInitializing = isInitializing;
+        // }
         
         /// <summary>
         /// 状態の更新

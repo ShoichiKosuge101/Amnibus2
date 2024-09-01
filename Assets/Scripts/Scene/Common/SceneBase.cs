@@ -1,5 +1,9 @@
-﻿using UnityEngine;
+﻿using Manager.Interface;
+using Manager.Service;
+using UnityEngine;
 using UnityEngine.SceneManagement;
+using Utils;
+using Utils.Interface;
 
 namespace Scene.Common
 {
@@ -49,6 +53,15 @@ namespace Scene.Common
         /// <param name="sceneName"></param>
         protected virtual void LoadTargetScene(string sceneName)
         {
+            // タイトル遷移ならサービス解除
+            if (sceneName == "Title")
+            {
+                ServiceLocator.Instance.Unregister<IInputManager>();
+                ServiceLocator.Instance.Unregister<IMapManager>();
+                ServiceLocator.Instance.Unregister<IInventoryManager>();
+                ServiceLocator.Instance.Unregister<PlayerHpService>();
+            }
+            
             // シーン遷移処理を記述
             SceneManager.LoadScene(sceneName);
         }

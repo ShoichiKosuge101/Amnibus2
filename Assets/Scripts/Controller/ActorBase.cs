@@ -3,8 +3,10 @@ using System.Threading;
 using Controller.Animator;
 using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using Manager.Service;
 using UniRx;
 using UnityEngine;
+using Utils;
 
 namespace Controller
 {
@@ -24,7 +26,7 @@ namespace Controller
         /// <summary>
         /// 現在のHP
         /// </summary>
-        protected ReactiveProperty<int> _currentHpRx = new ReactiveProperty<int>(0);
+        protected readonly ReactiveProperty<int> _currentHpRx = new ReactiveProperty<int>(0);
         
         // 移動中かどうか
         public bool IsMoving { get; private set; }
@@ -50,8 +52,20 @@ namespace Controller
 
         private void Start()
         {
-            // HPを格納
-            _currentHpRx.Value = _actorData.Hp;
+            // プレイヤーだった時はHpServiceから取り出す
+            if (this is PlayerController)
+            {
+                var playerHpService = ServiceLocator.Instance.Resolve<PlayerHpService>();
+                // 初期化(一度だけ実行される)
+                playerHpService.Initialize(_actorData.Hp);
+                
+                _currentHpRx.Value = playerHpService.CurrentHp;
+            }
+            else
+            {
+                // HPを格納
+                _currentHpRx.Value = _actorData.Hp;
+            }
         }
 
         public void SetNextPosition(Vector2 nextPosition)

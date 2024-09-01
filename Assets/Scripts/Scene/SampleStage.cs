@@ -4,12 +4,12 @@ using Cysharp.Threading.Tasks.Linq;
 using Dungeons;
 using Manager;
 using Manager.Interface;
+using Manager.Service;
 using Scene.Common;
 using UI;
 using UniRx;
 using Unity.Cinemachine;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Utils;
 using Utils.Interface;
 
@@ -44,12 +44,26 @@ namespace Scene
         /// </summary>
         protected override void RegisterSceneServices()
         {
-            // 入力マネージャーを登録
-            ServiceLocator.Instance.Register<IInputManager>(new InputManager());
+            if(!ServiceLocator.Instance.IsRegistered<IInputManager>())
+            {
+                // 入力マネージャーを登録
+                ServiceLocator.Instance.Register<IInputManager>(new InputManager());
+            }
             // マップ管理クラスを登録
-            ServiceLocator.Instance.Register<IMapManager>(new MapManager());
+            if (!ServiceLocator.Instance.IsRegistered<IMapManager>())
+            {
+                ServiceLocator.Instance.Register<IMapManager>(new MapManager());
+            }
             // インベントリ管理クラスを登録
-            ServiceLocator.Instance.Register<IInventoryManager>(new InventoryManager());
+            if (!ServiceLocator.Instance.IsRegistered<IInventoryManager>())
+            {
+                ServiceLocator.Instance.Register<IInventoryManager>(new InventoryManager());
+            }
+            // プレイヤーHPサービスを登録
+            if (!ServiceLocator.Instance.IsRegistered<PlayerHpService>())
+            {
+                ServiceLocator.Instance.Register(new PlayerHpService());
+            }
         }
         
         /// <summary>

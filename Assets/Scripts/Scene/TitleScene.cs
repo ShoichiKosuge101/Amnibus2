@@ -1,4 +1,5 @@
-﻿using Scene.Common;
+﻿using Manager.Service;
+using Scene.Common;
 using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
@@ -39,6 +40,9 @@ namespace Scene
         {
             // 入力マネージャの登録
             ServiceLocator.Instance.Register<IInputManager>(new InputManager());
+            
+            // HpServiceは登録解除
+            ServiceLocator.Instance.Unregister<PlayerHpService>();
         }
     }
 }

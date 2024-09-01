@@ -21,6 +21,16 @@ namespace Utils
         {
             _services[typeof(T)] = service;
         }
+        
+        public void Unregister<T>()
+        {
+            _services.Remove(typeof(T));
+        }
+        
+        public bool IsRegistered<T>()
+        {
+            return _services.ContainsKey(typeof(T));
+        }
 
         public T Resolve<T>()
         {
