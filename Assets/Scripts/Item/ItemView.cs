@@ -36,7 +36,7 @@ namespace Item
         /// <param name="isSelected"></param>
         public void SetSelectedFrame(bool isSelected)
         {
-            selectedFrame.enabled = isSelected;
+            selectedFrame.gameObject.SetActive(isSelected);
         }
     }
 }

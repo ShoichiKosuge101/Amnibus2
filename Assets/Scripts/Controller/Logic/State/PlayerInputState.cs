@@ -88,8 +88,6 @@ namespace Controller.Logic.State
                 .Where(_ => Owner.CurrentState == this)
                 .Subscribe(_ =>
                 {
-                    Debug.Log("インベントリを開く");
-                    
                     // インベントリを開く
                     Owner.SwitchInventoryActive();
 
